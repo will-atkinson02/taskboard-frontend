@@ -1,0 +1,158 @@
+body {
+    /* Display */
+    margin: 0;
+
+    /* Colour */
+    color: white;
+    background-color: black;
+}
+
+header {
+    /* Display */
+    display: grid;
+    grid-template-columns: 4fr 2fr 2fr 1fr 1fr;
+    align-items: center;
+    border-bottom: 1px white solid;
+
+}
+
+.title {
+    /* Display */
+    padding-left: 20px;
+
+    /* Text */
+    font-size: 20px;
+}
+
+.change-title {
+    /* Display */
+    margin: 20px 0 20px 20px;
+    border: solid white 2px;
+
+    /* Colour */
+    color: white;
+    background-color: black;
+
+    /* Text */
+    font-size: 20px;
+}
+
+.container-container{
+    /* Display */
+    display: flex;
+    align-items: flex-start;
+}
+
+.new-stage-container {
+    /* Display */
+    display: flex;
+    align-items: center;
+    width: 200px;
+    height: 30px;
+    border-radius: 10px;
+    margin: 20px;
+
+    /* Colour */
+    color: black;
+    background-color: white;
+}
+
+.new-stage-container:hover {
+    /* Colour */
+    color: black;
+    background-color: rgb(159, 158, 158);
+}
+
+i {
+    /* Display */
+    padding-left: 5px;
+} 
+
+.new-stage-expanded-container {
+    /* Display */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 200px;
+    height: 60px;
+    border-radius: 10px;
+    padding-left: 5px;
+    margin: 20px;
+
+    /* Colour */
+    color: black;
+    background-color: white;
+}
+
+.stage {
+    /* Display */
+    align-items: center;
+    width: 200px;
+    border-radius: 10px;
+    margin: 20px;
+    padding-left: 5px;
+    padding-right: 5px;
+
+    /* Colour */
+    color: black;
+    background-color: white;
+}
+
+.name-and-delete {
+    /* Display */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 30px;
+}
+
+.deleteStage {
+    /* Display */
+    height: 20px;
+}
+
+.task {
+    /* Display */
+    display: flex;
+    align-items: center;
+    width: 190px;
+    height: 30px;
+    border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    /* Colour */
+    color: black;
+    background-color: rgb(146, 163, 255);
+}
+
+.task-text {
+    /* Display */
+    padding-left: 5px;
+}
+
+.drop-target {
+    /* Display */
+    width: 190px;
+}
+
+.drop-placeholder-task {
+    /* Display */
+    display: flex;
+    align-items: center;
+    width: 190px;
+    height: 30px;
+    border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    /* Colour */
+    color: black;
+    background-color: rgb(23, 39, 124);
+}
+
+.hidden {
+    /* Display */
+    display: none;
+}
