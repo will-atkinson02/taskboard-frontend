@@ -65,20 +65,17 @@ function drop(event) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Response from server:", data);
-    })
-    .catch(error => console.error("Error:", error));
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data);
+        })
+        .catch(error => console.error("Error:", error));
 }
 
 function taskDraggingEventListener(task) {
     task.addEventListener('dragstart', (event) => {
         elementId = event.target.id
         draggedTask = document.getElementById(elementId)
-
-        console.log(elementId, draggedTask)
-
         isDragging = true
     })
 
@@ -90,13 +87,13 @@ function taskDraggingEventListener(task) {
     })
 
     task.addEventListener('dragenter', (event) => {
-        if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) { 
+        if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) {
             let taskBelow = event.target
 
             if (event.target.classList.contains('task-text')) {
                 taskBelow = event.target.closest('.task')
             }
-            
+
             if (!document.querySelector('.drop-placeholder-task')) {
                 if (!document.getElementById(elementId).closest('.stage').contains(taskBelow)) {
                     addTaskDropArea(taskBelow.id)
@@ -126,7 +123,7 @@ function taskDraggingEventListener(task) {
                         taskBelow.closest('.drop-target').insertBefore(taskBelow, document.querySelector('.drop-placeholder-task'))
                     } else {
                         taskBelow.closest('.drop-target').insertBefore(taskBelow, document.querySelector('.drop-placeholder-task'))
-                    }    
+                    }
                 } else if (isAfter(document.querySelector('.drop-placeholder-task'), taskBelow)) {
                     if (document.querySelector('.drop-placeholder-task').previousSibling === taskBelow) {
                         document.querySelector('.drop-placeholder-task').insertAdjacentElement('afterend', taskBelow)
@@ -136,6 +133,110 @@ function taskDraggingEventListener(task) {
                 }
             }
         }
+    })
+}
+
+function submitStage(stage) {
+    stage.addEventListener('dragenter', (event) => {
+        if (!event.target.classList.contains('task')
+            && !event.target.classList.contains('task-text')
+            && !event.target.classList.contains('drop-placeholder-task')
+            && !event.target.classList.contains('drop-target')) {
+            if (!stage.querySelector('.drop-placeholder-task')) {
+                if (document.querySelector('.drop-placeholder-task')) {
+                    document.querySelector('.drop-placeholder-task').remove()
+                }
+
+                if (document.getElementById(elementId)) {
+                    document.getElementById(elementId).remove()
+                }
+
+                const dropzoneDiv = document.createElement("div")
+
+                dropzoneDiv.classList.add('drop-placeholder-task')
+
+                const dropTarget = stage.querySelector('.drop-target')
+
+                dropTarget.appendChild(dropzoneDiv)
+            }
+        }
+    })
+}
+
+function sendTaskData() {
+    document.querySelectorAll('.add-task-expanded-container').forEach(newTaskForm => {
+        newTaskForm.addEventListener('submit', (event) => {
+            event.preventDefault()
+
+            let form = event.target
+            let formData = new FormData(form)
+            let jsonData = Object.fromEntries(formData.entries())
+            jsonData.stage_id = parseInt(newTaskForm.closest('.stage').id.slice(6))
+
+            fetch("http://127.0.0.1:8000/api/task", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Response from server:", data)
+
+                    document.querySelectorAll('.task-text').forEach(taskText => {
+                        if (taskText.textContent === jsonData.name) {
+                            taskText.closest('.task').setAttribute('id', data.taskId)
+                            taskText.closest('.task').setAttribute('draggable', 'true')
+                            document.querySelectorAll('.task').forEach(task => {
+                                taskDraggingEventListener(task)
+                            })
+                        }
+                    })
+                })
+                .catch(error => console.error("Error:", error))
+        })
+    })
+}
+
+function deleteStage() {
+    document.querySelectorAll('.name-and-delete').forEach(stageDeleteForm => {
+        stageDeleteForm.addEventListener('submit', (event) => {
+            event.preventDefault()
+            const stage = stageDeleteForm.closest('.stage')
+
+            const stageId = parseInt(stage.id.slice(6))
+            
+            stage.remove()
+
+            const url = "http://127.0.0.1:8000/api/stage/" + stageId
+
+            fetch(url, {
+                method: "DELETE"
+            })
+                .then(response => response.json())
+                .then(data => console.log("Response from server:", data))
+                .catch(error => console.error("Error:", error))
+        })
+    })
+}
+
+function displayNewTaskTemp() {
+    document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
+        taskSubmitButton.addEventListener('click', () => {
+            const currentStage = taskSubmitButton.closest('.stage')
+            const inputValue = currentStage.querySelector('.task-name-input').value
+
+            if (inputValue) {
+                currentStage.querySelector('.drop-target').innerHTML += `
+                <div class='task' id="" draggable='false' ondragstart='drag(event)'>
+                    <div class='task-text'>${inputValue}</div>
+                </div>`
+
+                currentStage.querySelector('.add-task-container').classList.remove('hidden')
+                currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
+            }
+        })
     })
 }
 
@@ -152,10 +253,14 @@ fetch(taskboardUrl)
 
         data.data.stages.forEach(stage => {
             document.querySelector('.container-container').innerHTML += `
-            <div class='stage' id="Stage ${stage.id}" ondrop='drop(event)' ondragover='allowDrop(event)'><form method='POST' class='name-and-delete'><div>${stage.name}</div><input class='deleteStage' name='$name' type='submit' value='deleteStage'></form>
+            <div class='stage' id="Stage ${stage.id}" ondrop='drop(event)' ondragover='allowDrop(event)'>
+                <form class='name-and-delete'>
+                    <div class='stage-name'>${stage.name}</div>
+                    <input class='deleteStage' name='$name' type='submit' value='deleteStage'>
+                </form>
                 <div class='drop-target'></div>
                 <div class='add-task-container'>+ Add Card</div>
-                <form class='add-task-expanded-container hidden' method='POST'>
+                <form class='add-task-expanded-container hidden'>
                     <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
                     <div>
                         <input class='task-name-submit' name='$stageId' value='Add task' type='submit'>
@@ -188,59 +293,12 @@ fetch(taskboardUrl)
         </form>
         `
 
-        document.querySelectorAll('.add-task-expanded-container').forEach(newTaskForm => {
-            newTaskForm.addEventListener('submit', (event) => {
-                event.preventDefault()
-                
-                let form = event.target
-                let formData = new FormData(form)
-                let jsonData = Object.fromEntries(formData.entries())
-                jsonData.stage_id = parseInt(newTaskForm.closest('.stage').id.slice(6))
-
-                fetch("http://127.0.0.1:8000/api/task", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(jsonData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response from server:", data)
-
-                    document.querySelectorAll('.task-text').forEach(taskText => {
-                        if (taskText.textContent === jsonData.name) {
-                            taskText.closest('.task').setAttribute('id', data.taskId)
-                            taskDraggingEventListener(taskText.closest('.task'))
-                        }
-                    })
-                })
-                .catch(error => console.error("Error:", error))
-            })
-        })
-
-        document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-            taskSubmitButton.addEventListener('click', () => {
-                const currentStage = taskSubmitButton.closest('.stage')
-                const inputValue = currentStage.querySelector('.task-name-input').value
-
-                if (inputValue) {
-                    currentStage.querySelector('.drop-target').innerHTML += `
-                    <div class='task' id="" draggable='true' ondragstart='drag(event)'>
-                        <div class='task-text'>${inputValue}</div>
-                    </div>`
-
-                    currentStage.querySelector('.add-task-container').classList.remove('hidden')
-                    currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
-                } else {
-                    console.log('test')
-                }
-            })
-        })
+        sendTaskData()
+        displayNewTaskTemp()
 
         document.querySelector('.new-stage-expanded-container').addEventListener('submit', (event) => {
             event.preventDefault()
-                
+
             let form = event.target
             let formData = new FormData(form)
             let jsonData = Object.fromEntries(formData.entries())
@@ -253,12 +311,55 @@ fetch(taskboardUrl)
                 },
                 body: JSON.stringify(jsonData)
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Response from server:", data)
-            })
-            .catch(error => console.error("Error:", error))
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Response from server:", data)
+
+                    document.querySelectorAll('.stage-name').forEach(stageName => {
+                        if (stageName.textContent === jsonData.name) {
+                            stageName.closest('.stage').setAttribute('id', 'Stage ' + data.stageId)
+                            document.querySelectorAll('.stage').forEach(stage => {
+                                submitStage(stage)
+                                deleteStage()
+                            })
+                        }
+                    })
+
+                    sendTaskData()
+                    displayNewTaskTemp()
+                })
+                .catch(error => console.error("Error:", error))
+            
+            const inputValue = document.querySelector('.stage-name-input').value
+
+            if (inputValue) {
+                const newStage = document.querySelector('.new-stage-container')
+                const newStageHtml = `
+                    <div class='stage' id="" ondrop='drop(event)' ondragover='allowDrop(event)'>
+                        <form class='name-and-delete'>
+                            <div class='stage-name'>${inputValue}</div>
+                            <input class='deleteStage' name='$name' type='submit' value='deleteStage'>
+                        </form>
+                        <div class='drop-target'></div>
+                        <div class='add-task-container'>+ Add Card</div>
+                        <form class='add-task-expanded-container hidden'>
+                            <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
+                            <div>
+                                <input class='task-name-submit' name='$stageId' value='Add task' type='submit'>
+                                <button>x</button>
+                            </div>
+                        </form>
+                    </div>
+                    `
+
+                newStage.insertAdjacentHTML('beforebegin', newStageHtml)
+
+                document.querySelector('.new-stage-container').classList.remove('hidden')
+                document.querySelector('.new-stage-expanded-container').classList.add('hidden')
+            }
         })
+
+        deleteStage()
 
         let isDragging = false
 
@@ -267,88 +368,59 @@ fetch(taskboardUrl)
         })
 
         document.querySelectorAll('.stage').forEach(stage => {
-            stage.addEventListener('dragenter', (event) => {
-                if (!event.target.classList.contains('task') 
-                && !event.target.classList.contains('task-text')
-                && !event.target.classList.contains('drop-placeholder-task')
-                && !event.target.classList.contains('drop-target')) {
-                    if (!stage.querySelector('.drop-placeholder-task')) {
-                        if (document.querySelector('.drop-placeholder-task')) {
-                            document.querySelector('.drop-placeholder-task').remove()
-                        }
-                        
-                        if (document.getElementById(elementId)) {
-                            document.getElementById(elementId).remove()
-                        }
-            
-                        const dropzoneDiv = document.createElement("div")
-            
-                        dropzoneDiv.classList.add('drop-placeholder-task')
-            
-                        const dropTarget = stage.querySelector('.drop-target')
-            
-                        dropTarget.appendChild(dropzoneDiv) 
-                    }   
-                }
-            })
+            submitStage(stage)
         })
 
         const newStage = document.querySelector('.new-stage-container')
         const newStageExpanded = document.querySelector('.new-stage-expanded-container')
 
         window.addEventListener("click", (event) => {
-        const title = document.querySelector('.title')
-        const titleBox = document.querySelector('.change-title')
+            const title = document.querySelector('.title')
+            const titleBox = document.querySelector('.change-title')
 
-        if (event.target.classList.contains('title')) {
-            title.classList.add('hidden')
-            titleBox.classList.remove('hidden')
-            titleBox.focus()
-        } else if (!event.target.classList.contains('change-title')) {
-            title.classList.remove('hidden')
-            titleBox.classList.add('hidden')
-        }
+            if (event.target.classList.contains('title')) {
+                title.classList.add('hidden')
+                titleBox.classList.remove('hidden')
+                titleBox.focus()
+            } else if (!event.target.classList.contains('change-title')) {
+                title.classList.remove('hidden')
+                titleBox.classList.add('hidden')
+            }
 
-        const newStageClicked = event.target.closest('.new-stage-container')
-        const newStageExpandedClicked = event.target.closest('.new-stage-expanded-container')
+            const newStageClicked = event.target.closest('.new-stage-container')
+            const newStageExpandedClicked = event.target.closest('.new-stage-expanded-container')
 
-        if (newStageClicked) {
-            newStage.classList.add('hidden')
-            newStageExpanded.classList.remove('hidden')
-        } else if (!newStageExpandedClicked) {
-            newStage.classList.remove('hidden')
-            newStageExpanded.classList.add('hidden')
-        }
+            if (newStageClicked) {
+                newStage.classList.add('hidden')
+                newStageExpanded.classList.remove('hidden')
+            } else if (!newStageExpandedClicked) {
+                newStage.classList.remove('hidden')
+                newStageExpanded.classList.add('hidden')
+            }
 
-        const inAddTaskExpanded = event.target.closest('.add-task-expanded-container')
+            const inAddTaskExpanded = event.target.closest('.add-task-expanded-container')
 
-        if (event.target.classList.contains('add-task-container')) {
-            const stageClosest = event.target.closest('.stage')
+            if (event.target.classList.contains('add-task-container')) {
+                const stageClosest = event.target.closest('.stage')
 
-            const newTask = stageClosest.querySelector('.add-task-container')
-            const newTaskExpanded = stageClosest.querySelector('.add-task-expanded-container')
+                const newTask = stageClosest.querySelector('.add-task-container')
+                const newTaskExpanded = stageClosest.querySelector('.add-task-expanded-container')
 
-            document.querySelectorAll('.stage').forEach(stage => {
-                if (stage.querySelector('.add-task-container') != newTask) {
-                    stage.querySelector('.add-task-container').classList.remove('hidden')
-                    stage.querySelector('.add-task-expanded-container').classList.add('hidden')
-                } else {
-                    newTask.classList.add('hidden')
-                    newTaskExpanded.classList.remove('hidden')
-                }
-            })
+                document.querySelectorAll('.stage').forEach(stage => {
+                    if (stage.querySelector('.add-task-container') != newTask) {
+                        stage.querySelector('.add-task-container').classList.remove('hidden')
+                        stage.querySelector('.add-task-expanded-container').classList.add('hidden')
+                    } else {
+                        newTask.classList.add('hidden')
+                        newTaskExpanded.classList.remove('hidden')
+                    }
+                })
 
             } else if (!inAddTaskExpanded) {
                 document.querySelectorAll('.stage').forEach(stage => {
                     stage.querySelector('.add-task-container').classList.remove('hidden')
                     stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                 })
-            }
-
-            if (event.target.classList.contains('deleteStage')) {
-                const stageClosest = event.target.closest('.stage')
-                const nameContainerClosest = event.target.closest('name-and-delete')
-                const nameClosest = nameContainerClosest.querySelector('div').textContent
             }
         })
     }).catch(error => console.error('Error:', error))
