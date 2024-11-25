@@ -5,15 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taskboard</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/taskboard.css">
     <script src="scripts/taskboardScripts.js" defer></script>
 </head>
 <body>
     <header>
-        <h3 class="title"></h3>
-        <input class="change-title hidden" type="text" value=''>
-        <a href="createTaskboard.html">New Taskboard</a>
-        <a href="index.html">Home</a>
+        <div class="title-container">
+            <h3 class="title"></h3>
+            <form class="title-form">
+                <input class="change-title hidden" type="text" name="name" value=''>
+            </form>
+        </div>
+        <a class="header-link" href="createTaskboard.html">New Taskboard</a>
+        <a class="header-link" href="index.html">Home</a>
     </header>
 
     <div class="container-container"></div>

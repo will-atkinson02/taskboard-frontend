@@ -260,6 +260,10 @@ function displayNewTaskTemp() {
     })
 }
 
+// function submitTitleForm() {
+//     document.querySelector('.title-form').submit()
+// }
+
 const taskboardId = 2
 const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
 
@@ -279,7 +283,7 @@ fetch(taskboardUrl)
                     <input class='deleteStage' name='$name' type='submit' value='deleteStage'>
                 </form>
                 <div class='drop-target'></div>
-                <div class='add-task-container'>+ Add Card</div>
+                <div class='add-task-container'>+ Add task</div>
                 <form class='add-task-expanded-container hidden'>
                     <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
                     <div>
@@ -301,7 +305,8 @@ fetch(taskboardUrl)
 
         document.querySelector('.container-container').innerHTML += `
         <div class="new-stage-container">
-            <i>+</i> New stage
+            <i>+</i>
+            <div class='new-stage-text'>New stage</div>
         </div>
         
         <form class="new-stage-expanded-container hidden">
@@ -313,7 +318,27 @@ fetch(taskboardUrl)
         </form>
         `
 
-        
+        document.querySelector('.title-form').addEventListener('submit', (event) => {
+            event.preventDefault()
+            let form = event.target
+            let formData = new FormData(form)
+            let jsonData = Object.fromEntries(formData.entries())
+
+            let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
+
+            fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Response from server:", data)
+                })
+                .catch(error => console.error("Error:", error))
+        })
 
         sendTaskData()
         displayNewTaskTemp()
@@ -420,6 +445,29 @@ fetch(taskboardUrl)
             } else if (!event.target.classList.contains('change-title')) {
                 title.classList.remove('hidden')
                 titleBox.classList.add('hidden')
+                       
+                if (document.querySelector('.change-title').value != document.querySelector('.title').textContent) {
+                    let newTitle = document.querySelector('.change-title').value
+                    
+                    document.querySelector('.title').textContent = newTitle
+                    
+                    let jsonData = {"name": newTitle}
+
+                    let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
+
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(jsonData)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data)
+                        })
+                        .catch(error => console.error("Error:", error))
+                }
             }
 
             const newStageClicked = event.target.closest('.new-stage-container')
