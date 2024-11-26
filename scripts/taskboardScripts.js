@@ -260,9 +260,6 @@ function displayNewTaskTemp() {
     })
 }
 
-// function submitTitleForm() {
-//     document.querySelector('.title-form').submit()
-// }
 
 const taskboardId = 2
 const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
@@ -283,7 +280,7 @@ fetch(taskboardUrl)
                     <input class='deleteStage' name='$name' type='submit' value='deleteStage'>
                 </form>
                 <div class='drop-target'></div>
-                <div class='add-task-container'>+ Add task</div>
+                <div class='add-task-container'><i class="fa-solid fa-plus"></i> Add task</div>
                 <form class='add-task-expanded-container hidden'>
                     <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
                     <div>
@@ -305,7 +302,7 @@ fetch(taskboardUrl)
 
         document.querySelector('.container-container').innerHTML += `
         <div class="new-stage-container">
-            <i>+</i>
+            <i class="fa-duotone fa-solid fa-plus"></i>
             <div class='new-stage-text'>New stage</div>
         </div>
         
@@ -338,6 +335,23 @@ fetch(taskboardUrl)
                     console.log("Response from server:", data)
                 })
                 .catch(error => console.error("Error:", error))
+        })
+        
+        const titleInput = document.querySelector('.change-title')
+        
+        let titleWidth = document.querySelector('.title').getBoundingClientRect().width
+
+        titleInput.style.width = `${titleWidth}px`;
+
+        titleInput.addEventListener('input', (event) => {
+            let avgCharWidth = titleWidth / title.textContent.length
+
+            if (event.data === null) {
+                titleInput.style.width = `${titleWidth - avgCharWidth}px`
+            }
+
+            titleWidth = titleInput.scrollWidth 
+            titleInput.style.width = `${titleWidth}px`
         })
 
         sendTaskData()

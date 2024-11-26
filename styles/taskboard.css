@@ -32,7 +32,8 @@ header {
 
 .title {
     /* Display */
-    padding-left: 20px;
+    margin-left: 20px;
+    height: 23px;
 
     /* Text */
     font-weight: 700;
@@ -40,9 +41,14 @@ header {
 }
 
 .change-title {
+    all: unset;
+
     /* Display */
-    margin: 20px 0 20px 20px;
-    border: solid white 2px;
+    height: 22px;
+    margin: 18px 0 18px 20px;
+    border: solid white 1px;
+    padding: 2px;
+    width: auto;
 
     /* Colour */
     color: white;
@@ -50,6 +56,7 @@ header {
 
     /* Text */
     font-size: 20px;
+    font-weight: 700;
 }
 
 .container-container{
@@ -82,6 +89,7 @@ header {
 i {
     /* Display */
     padding-left: 5px;
+    padding-right: 5px;
 } 
 
 .new-stage-text {
@@ -132,6 +140,11 @@ i {
     padding-top: 5px;
 }
 
+.stage-name {
+    /* Font */
+    font-weight: 600;
+}
+
 .deleteStage {
     /* Display */
     height: 20px;
@@ -168,6 +181,9 @@ i {
     border-radius: 4px;
     margin: 8px 0;
 
+    /* Font */
+    font-size: 13px;
+
     /* Colour */
     color: #3b2f34;
 }
@@ -200,4 +216,13 @@ i {
 .hidden {
     /* Display */
     display: none;
+}
+
+#hidden-span {
+    visibility: hidden;
+    white-space: pre; /* Preserve spaces and exact text width */
+    position: absolute;
+}
+.span-container {
+    position: relative; /* Keep elements positioned properly */
 }
