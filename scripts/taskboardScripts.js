@@ -260,14 +260,15 @@ function displayNewTaskTemp() {
     })
 }
 
-
 const taskboardId = 2
 const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
 
 fetch(taskboardUrl)
     .then(response => response.json())
     .then(data => {
-        let title = document.querySelector('.title')
+        const title = document.querySelector('.title')
+        const titleBox = document.querySelector('.change-title')
+
         let titleContent = document.createTextNode(data.data.name)
         title.appendChild(titleContent)
         document.querySelector('.change-title').value = data.data.name
@@ -316,6 +317,9 @@ fetch(taskboardUrl)
         `
 
         document.querySelector('.title-form').addEventListener('submit', (event) => {
+            title.classList.remove('hidden')
+            titleBox.classList.add('hidden')
+
             event.preventDefault()
             let form = event.target
             let formData = new FormData(form)
@@ -336,24 +340,31 @@ fetch(taskboardUrl)
                 })
                 .catch(error => console.error("Error:", error))
         })
+
+        // Dynamic title input code
+        let titleWidth = title.getBoundingClientRect().width
+        titleBox.style.width = `${titleWidth}px`
         
-        const titleInput = document.querySelector('.change-title')
-        
-        let titleWidth = document.querySelector('.title').getBoundingClientRect().width
-
-        titleInput.style.width = `${titleWidth}px`;
-
-        titleInput.addEventListener('input', (event) => {
-            let avgCharWidth = titleWidth / title.textContent.length
-
+        titleBox.addEventListener('input', (event) => {
+            title.textContent = titleBox.value
+            
             if (event.data === null) {
-                titleInput.style.width = `${titleWidth - avgCharWidth}px`
+                let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
+                title.style.width = `${titleWidth - charLength}px`
+                title.classList.remove('hidden')
+                titleWidth = title.getBoundingClientRect().width
+                title.classList.add('hidden')
+                titleBox.style.width = `${titleWidth}px`
+            } else {
+                title.style.width = null
+                title.classList.remove('hidden')
+                titleWidth = title.getBoundingClientRect().width
+                title.classList.add('hidden')
+                titleBox.style.width = `${titleWidth}px`
             }
-
-            titleWidth = titleInput.scrollWidth 
-            titleInput.style.width = `${titleWidth}px`
         })
 
+        // Tasks
         sendTaskData()
         displayNewTaskTemp()
 
@@ -451,7 +462,6 @@ fetch(taskboardUrl)
         window.addEventListener("click", (event) => {
             const title = document.querySelector('.title')
             const titleBox = document.querySelector('.change-title')
-
             if (event.target.classList.contains('title')) {
                 title.classList.add('hidden')
                 titleBox.classList.remove('hidden')

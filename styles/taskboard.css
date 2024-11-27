@@ -34,18 +34,26 @@ header {
     /* Display */
     margin-left: 20px;
     height: 23px;
+    white-space: pre;
+    width: auto;
 
     /* Text */
     font-weight: 700;
     font-size: 20px;
 }
 
+.title:hover {
+    /* Display */
+    outline: solid rgb(108, 108, 108) 1px;
+}
+
 .change-title {
     all: unset;
+    white-space: pre;
 
     /* Display */
     height: 22px;
-    margin: 18px 0 18px 20px;
+    margin: 18px 0 18px 17.466px;
     border: solid white 1px;
     padding: 2px;
     width: auto;
