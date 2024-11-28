@@ -4,7 +4,10 @@ body {
 
     /* Colour */
     color: white;
-    background-color: black;
+    background-color: #F8F0FB;
+
+    /* Font */
+    font-family: 'Montserrat', sans-serif;
 }
 
 header {
@@ -13,6 +16,10 @@ header {
     grid-template-columns: 4fr 2fr 2fr 1fr 1fr;
     align-items: center;
     border-bottom: 1px white solid;
+
+    /* Colour */
+    color: white;
+    background-color: #211A1D;
 
 }
 
@@ -26,8 +33,7 @@ h1 {
     margin: 50px 0;
 
     /* Colour */
-    color: white;
-    background-color: black;
+    color: #211A1D;
 
     /* Text */
     font-size: medium;
