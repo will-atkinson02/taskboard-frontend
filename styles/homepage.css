@@ -51,35 +51,23 @@ h1 {
 .notifications-container {
     /* Display */
     width: 40%;
-
-    /* Colour */    
 }
 
-
-
-.info-box {
+.login-form-container {
     /* Display */
-    margin: 1px;
-
-    /* Text */
-    font-size: 15px;
-    font-weight: 300;
-
-    /* Colour */
-    color: black;
-    background-color: white;
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.title-box {
+.login-form {
     /* Display */
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-
-    /* Text */
-    font-size: 20px;
-    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    padding: 20px;
+    border: #211A1D solid 2px;
 
     /* Colour */
-    background-color: rgb(40, 39, 39);
+    color: #211A1D;
 }
