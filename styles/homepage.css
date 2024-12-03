@@ -13,7 +13,7 @@ body {
 header {
     /* Display */
     display: grid;
-    grid-template-columns: 4fr 2fr 2fr 1fr 1fr;
+    grid-template-columns: 85vw 10vw 5vw;
     align-items: center;
     border-bottom: 1px white solid;
 
@@ -21,6 +21,35 @@ header {
     color: white;
     background-color: #211A1D;
 
+}
+
+.header-link {
+    all: unset;
+
+    /* Display */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    width: 100%;
+    height: 100%;
+
+    /* Colour */
+    color: white;
+    background-color: #211A1D;
+
+    /* Font */
+    text-decoration: none;
+}
+
+.header-link:hover {
+    color: rgb(228, 158, 158);
+    background-color: #392c32;
+    cursor: pointer;
+}
+
+.padding-lol {
+    padding-left: 5px;
 }
 
 .title {
@@ -38,6 +67,12 @@ h1 {
     /* Text */
     font-size: medium;
     text-align: center;
+}
+
+.h1-container {
+    border-bottom: solid #211A1D 2px;
+    width: 90vw;
+    margin-left: 5vw;
 }
 
 .notifications-and-due {
@@ -58,16 +93,164 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 20px;
 }
 
 .login-form {
     /* Display */
     display: flex;
     flex-direction: column;
-    width: 500px;
+    width: 200px;
+    height: 300px;
     padding: 20px;
     border: #211A1D solid 2px;
+    border-right: none;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
 
     /* Colour */
     color: #211A1D;
+    background-color: #8c948c;
+}
+
+.register-form {
+    /* Display */
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    height: 300px;
+    padding: 20px;
+    border: #8c948c solid 2px;
+    border-left: none;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+
+    /* Colour */
+    color: white;
+    background-color: #211A1D;
+}
+
+label {
+    /* Text */
+    font-size: 12px;
+}
+
+.basic-input {
+    /* Display */
+    margin-bottom: 10px;
+    width: 96%;
+}
+
+.basic-button {
+    all: unset;
+
+    /* Display */
+    margin-bottom: 10px;
+    width: 40%;
+    height: 25px;
+    border-radius: 10px;
+
+    /* Colour */
+    background-color: rgb(101, 101, 239);
+    color: white;
+
+    /* Text */
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.basic-button:hover {
+    background-color: rgb(163, 163, 240);
+    cursor: pointer;
+}
+
+.taskboards-container {
+    /* Display */
+    display: flex;
+    flex-wrap: wrap;
+    margin: 20px;
+
+    /* Text */
+    text-align: center;
+}
+
+.taskboard {
+    /* Display */
+    height: 150px;
+    width: 120px;
+    padding-top: 4px;
+    
+    /* Colour */
+    background-color: #8c948c;
+    color: #211A1D;
+}
+
+.taskboard:hover {
+    /* Display */
+    height: 149px;
+    width: 119px;
+
+    /* Colour */
+    background-color: #b9c5b9;
+    cursor: pointer;
+    border: solid #211A1D 1px;
+}
+
+.taskboard-link {
+    /* Text */
+    text-decoration: none;
+}
+
+.taskboard-img {
+    /* Display */
+    width: 85%;
+    height: 70%;
+    margin: 7.5%;
+
+    /* Colour */
+    background-color: white;
+}
+
+.taskboard-txt {
+    /* Colour */
+    color: #211A1D;
+
+    /* Text */
+    text-align: center;
+    font-weight: 600;
+}
+
+#new-taskboard {
+    /* Display */
+    height: 150px;
+    width: 120px;
+    padding-top: 4px;
+    
+    /* Colour */
+    background-color: #8c948c;
+    color: #211A1D;
+}
+
+#new-taskboard:hover {
+    /* Display */
+    height: 149px;
+    width: 119px;
+
+    /* Colour */
+    background-color: #b9c5b9;
+    cursor: pointer;
+    border: solid #211A1D 1px;
+}
+
+.big-plus {
+    /* Display */
+    padding: 10%;
+
+    /* Colour */
+    color: #211A1D;
+
+    /* Text */
+    text-align: center;
+    font-size: 80px;
 }
