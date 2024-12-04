@@ -66,25 +66,6 @@ function dropPutRequest(draggedTask, position) {
         .catch(error => console.error("Error:", error))
 }
 
-// function drop(event) {
-//     event.preventDefault()
-
-//     const placeholder = document.querySelector('.drop-placeholder-task')
-//     const stage = placeholder.closest('.stage')
-
-//     placeholder.insertAdjacentElement('afterend', draggedTask)
-//     placeholder.remove()
-
-//     isDragging = false
-
-//     const dropTarget = stage.querySelector('.drop-target')
-//     const dropTargetArray = Array.from(dropTarget.children)
-    
-//     for (let i = dropTargetArray.indexOf(draggedTask) - 1; i <= dropTargetArray.length; i++) {
-//         dropPutRequest(dropTargetArray[i], i)
-//     }
-// }
-
 function taskDraggingEventListener(task) {
     task.addEventListener('dragstart', (event) => {
         elementId = event.target.id
@@ -178,47 +159,50 @@ function submitStage(stage) {
 
 function sendTaskData() {
     document.querySelectorAll('.add-task-expanded-container').forEach(newTaskForm => {
-        newTaskForm.addEventListener('submit', (event) => {
-            event.preventDefault()
+        if (!newTaskForm.hasAttribute('submit-added')) {
+            newTaskForm.addEventListener('submit', (event) => {
+                event.preventDefault()
 
-            let stage = newTaskForm.closest('.stage')
-            let dropTarget = stage.querySelector('.drop-target')
-            let numberOfTasks = dropTarget.childElementCount
+                let stage = newTaskForm.closest('.stage')
+                let dropTarget = stage.querySelector('.drop-target')
+                let numberOfTasks = dropTarget.childElementCount
 
-            let form = event.target
-            let formData = new FormData(form)
-            let jsonData = Object.fromEntries(formData.entries())
-            jsonData.position = numberOfTasks
-            jsonData.stage_id = parseInt(stage.id.slice(6))
+                let form = event.target
+                let formData = new FormData(form)
+                let jsonData = Object.fromEntries(formData.entries())
+                jsonData.position = numberOfTasks
+                jsonData.stage_id = parseInt(stage.id.slice(6))
 
-            if (jsonData.name) {
-                fetch("http://127.0.0.1:8000/api/task", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(jsonData)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Response from server:", data)
-    
-                        document.querySelectorAll('.task-text').forEach(taskText => {
-                            if (taskText.textContent === jsonData.name) {
-                                taskText.closest('.stage').querySelector('.task-name-input').value = ''
-                                taskText.closest('.task').setAttribute('id', data.taskId)
-                                taskText.closest('.task').setAttribute('draggable', 'true')
-                                document.querySelectorAll('.task').forEach(task => {
-                                    taskDraggingEventListener(task)
-                                })
-                            }
-                        })
+                if (jsonData.name) {
+                    fetch("http://127.0.0.1:8000/api/task", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify(jsonData)
                     })
-                    .catch(error => console.error("Error:", error))
-            }
-        })
-    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data)
+        
+                            document.querySelectorAll('.task-text').forEach(taskText => {
+                                if (taskText.textContent === jsonData.name) {
+                                    taskText.closest('.stage').querySelector('.task-name-input').value = ''
+                                    taskText.closest('.task').setAttribute('id', data.taskId)
+                                    taskText.closest('.task').setAttribute('draggable', 'true')
+                                    document.querySelectorAll('.task').forEach(task => {
+                                        taskDraggingEventListener(task)
+                                    })
+                                }
+                            })
+                        })
+                        .catch(error => console.error("Error:", error))
+                }
+            }, { once: true })
+            newTaskForm.setAttribute('submit-added', 'true')
+        }
+    })  
 }
 
 function deleteStage() {
@@ -246,29 +230,50 @@ function deleteStage() {
 
 function displayNewTaskTemp() {
     document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-        taskSubmitButton.addEventListener('click', () => {
-            const currentStage = taskSubmitButton.closest('.stage')
-            const inputValue = currentStage.querySelector('.task-name-input').value
+        if (!taskSubmitButton.hasAttribute('task-added')) {
+            taskSubmitButton.addEventListener('click', () => {
+                const currentStage = taskSubmitButton.closest('.stage')
+                const inputValue = currentStage.querySelector('.task-name-input').value
+                if (inputValue) {
+                    currentStage.querySelector('.drop-target').innerHTML += `
+                    <div class='task' id="" draggable='false' ondragstart='drag(event)'>
+                        <div class='task-text'>${inputValue}</div>
+                    </div>`
 
-            if (inputValue) {
-                currentStage.querySelector('.drop-target').innerHTML += `
-                <div class='task' id="" draggable='false' ondragstart='drag(event)'>
-                    <div class='task-text'>${inputValue}</div>
-                </div>`
-
-                currentStage.querySelector('.add-task-container').classList.remove('hidden')
-                currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
-            }
-        })
+                    currentStage.querySelector('.add-task-container').classList.remove('hidden')
+                    currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
+                }
+            })
+            taskSubmitButton.setAttribute('task-added', 'true')
+        }
+        
     })
+}
+
+function changeTitleRequest(taskboardId, token, jsonData) {
+    let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
+
+    fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Response from server:", data)
+    })
+    .catch(error => console.error("Error:", error))
 }
 
 const token = sessionStorage.getItem('auth_token')
 
-const taskboardId = 2
-const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
+const urlParams = new URLSearchParams(window.location.search)
+const taskboardId = urlParams.get('id')
 
-console.log(token)
+const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
 
 if (token) {
     fetch(taskboardUrl, {
@@ -284,8 +289,10 @@ if (token) {
 
             let titleContent = document.createTextNode(data.data.name)
             title.appendChild(titleContent)
-            document.querySelector('.change-title').value = data.data.name
+            titleBox.value = data.data.name
+            const initialTitleValue = title.textContent
 
+            // Render all stages
             data.data.stages.forEach(stage => {
                 document.querySelector('.container-container').innerHTML += `
                 <div class='stage' id="Stage ${stage.id}" ondragover='allowDrop(event)'>
@@ -304,7 +311,8 @@ if (token) {
                     </form>
                 </div>
                 `
-
+                
+                // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
                     <div class='task' id=${task.id} draggable='true' ondragstart='drag(event)'>
@@ -314,6 +322,7 @@ if (token) {
                 })
             })
 
+            // Add remaining html
             document.querySelector('.container-container').innerHTML += `
             <div class="new-stage-container">
                 <i class="fa-duotone fa-solid fa-plus"></i>
@@ -329,30 +338,18 @@ if (token) {
             </form>
             `
 
+            // Submit change title request
             document.querySelector('.title-form').addEventListener('submit', (event) => {
                 title.classList.remove('hidden')
                 titleBox.classList.add('hidden')
 
                 event.preventDefault()
-                let form = event.target
-                let formData = new FormData(form)
-                let jsonData = Object.fromEntries(formData.entries())
-
-                let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
-
-                fetch(url, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(jsonData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response from server:", data)
-                })
-                .catch(error => console.error("Error:", error))
+                if (initialTitleValue != titleBox.value) {
+                    let form = event.target
+                    let formData = new FormData(form)
+                    let jsonData = Object.fromEntries(formData.entries())
+                    changeTitleRequest(taskboardId, token, jsonData)
+                }
             })
 
             // Dynamic title input code
@@ -380,8 +377,12 @@ if (token) {
 
             // Tasks
             sendTaskData()
+
+            // Display independent server-side task
             displayNewTaskTemp()
 
+
+            // Add new stage
             document.querySelector('.new-stage-expanded-container').addEventListener('submit', (event) => {
                 event.preventDefault()
 
@@ -413,7 +414,6 @@ if (token) {
                                     })
                                 }
                             })
-        
                             sendTaskData()
                             displayNewTaskTemp()
                         })
@@ -449,14 +449,17 @@ if (token) {
                 }
             })
 
+            // Handle delete stage request
             deleteStage()
 
             let isDragging = false
 
+            // Add task dragging event listener to all tasks
             document.querySelectorAll('.task').forEach(task => {
                 taskDraggingEventListener(task)
             })
 
+            // Handle task placeholder transfer between stage
             document.querySelectorAll('.stage').forEach(stage => {
                 submitStage(stage)
             })
@@ -468,6 +471,7 @@ if (token) {
                 event.preventDefault()
             })
 
+            // Handle task drop and position in database
             document.addEventListener("drop", (event) => {
                 event.preventDefault()
 
@@ -490,40 +494,23 @@ if (token) {
                 }
             })
 
+            // Handle all clicks
             window.addEventListener("click", (event) => {
-                const title = document.querySelector('.title')
-                const titleBox = document.querySelector('.change-title')
                 if (event.target.classList.contains('title')) {
                     title.classList.add('hidden')
                     titleBox.classList.remove('hidden')
                     titleBox.focus()
-                } else if (!event.target.classList.contains('change-title')) {
+                    
+                } else if (event.target != title && event.target != titleBox) {
+                    if (initialTitleValue != titleBox.value) {
+                        let newTitle = titleBox.value
+                        title.textContent = newTitle
+                        let jsonData = {"name": newTitle}
+                        changeTitleRequest(taskboardId, token, jsonData)
+                    }
+
                     title.classList.remove('hidden')
                     titleBox.classList.add('hidden')
-                        
-                    if (document.querySelector('.change-title').value != document.querySelector('.title').textContent) {
-                        let newTitle = document.querySelector('.change-title').value
-                        
-                        document.querySelector('.title').textContent = newTitle
-                        
-                        let jsonData = {"name": newTitle}
-
-                        let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
-
-                        fetch(url, {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-                            body: JSON.stringify(jsonData)
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log("Response from server:", data)
-                            })
-                            .catch(error => console.error("Error:", error))
-                    }
                 }
 
                 const newStageClicked = event.target.closest('.new-stage-container')

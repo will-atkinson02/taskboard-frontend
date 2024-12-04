@@ -180,6 +180,7 @@ label {
     height: 150px;
     width: 120px;
     padding-top: 4px;
+    border: solid transparent 1px;
     
     /* Colour */
     background-color: #8c948c;
@@ -187,18 +188,15 @@ label {
 }
 
 .taskboard:hover {
-    /* Display */
-    height: 149px;
-    width: 119px;
-
     /* Colour */
     background-color: #b9c5b9;
     cursor: pointer;
-    border: solid #211A1D 1px;
+    border-color: #211A1D;
 }
 
 .taskboard-link {
     /* Text */
+    height: 150px;
     text-decoration: none;
 }
 
@@ -226,6 +224,7 @@ label {
     height: 150px;
     width: 120px;
     padding-top: 4px;
+    border: solid transparent 1px;
     
     /* Colour */
     background-color: #8c948c;
@@ -233,14 +232,10 @@ label {
 }
 
 #new-taskboard:hover {
-    /* Display */
-    height: 149px;
-    width: 119px;
-
     /* Colour */
     background-color: #b9c5b9;
     cursor: pointer;
-    border: solid #211A1D 1px;
+    border-color: #211A1D;
 }
 
 .big-plus {

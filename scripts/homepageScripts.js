@@ -1,3 +1,19 @@
+function createNewTaskboardRequest(token, userJson) {
+    fetch("http://127.0.0.1:8000/api/taskboard", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(userJson)
+    })
+    .then(response => response.json())
+    .then(data => {
+            window.location.href = `http://127.0.0.1:5500/taskboard.html?id=${data.taskboard_id}`;
+    })
+    .catch(error => console.error("Error:", error))
+}
+
 let token = sessionStorage.getItem('auth_token')
 
 console.log(token)
@@ -90,11 +106,11 @@ if (!token) {
                             document.querySelector('.logout-text')]
 
     window.addEventListener('click', (event) => {  
+        // Logout button functionality
         if (event.target === document.querySelector('.header-link') ||
             event.target === document.querySelector('i') ||
             event.target === document.querySelector('.logout-text')) {
             
-
             fetch("http://127.0.0.1:8000/api/logout", {
                 method: "POST",
                 headers: {
@@ -110,6 +126,11 @@ if (!token) {
             })
             .catch(error => console.error("Error:", error))
         }
+
+        // New Taskboard button functionality
+        if (event.target === document.getElementById('new-taskboard')) {
+            createNewTaskboardRequest(token, userJson)
+        }
     })
 
     document.querySelector('body').innerHTML += `
@@ -119,15 +140,13 @@ if (!token) {
     <div class="taskboards-container"></div>`
 
     document.querySelector('.taskboards-container').innerHTML += `
-            <div id="new-taskboard">
-                <a class="taskboard-link" href="taskboard.html">
-                    <i class="big-plus fa-solid fa-plus"></i>
-                    <div class="taskboard-txt">New <br /> Taskboard</div>
-                </a>
-            </div>`
+    <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
+        <i class="big-plus fa-solid fa-plus"></i>
+        <div class="taskboard-txt">New <br /> Taskboard</div>
+    </div>
+    `
 
-    let getUserEndpoint = "http://127.0.0.1:8000/api/user/" + sessionStorage.getItem('username')
-
+    const getUserEndpoint = "http://127.0.0.1:8000/api/user/" + sessionStorage.getItem('username')
     fetch(getUserEndpoint, {
         method: "GET",
         headers: {
@@ -140,14 +159,17 @@ if (!token) {
         data.data.taskboards.forEach(taskboard => {
             document.querySelector('.taskboards-container').innerHTML += `
             <div class="taskboard">
-                <a class="taskboard-link" href="taskboard.html">
+                <a class="taskboard-link" href="http://127.0.0.1:5500/taskboard.html?id=${taskboard.id}">
                     <div class="taskboard-img"></div>
                     <div class="taskboard-txt">${taskboard.name}</div>
                 </a>
             </div>`
         })
+
+        // New Taskboard button functionality re-added
+        document.getElementById('new-taskboard').addEventListener('click', () => {
+            createNewTaskboardRequest(token, userJson)
+        })  
     })
     .catch(error => console.error("Error:", error))
-
-    
 }
