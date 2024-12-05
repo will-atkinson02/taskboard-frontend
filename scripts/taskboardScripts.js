@@ -268,6 +268,12 @@ function changeTitleRequest(taskboardId, token, jsonData) {
     .catch(error => console.error("Error:", error))
 }
 
+document.querySelector('body').innerHTML += `
+    <div class="spinner-container">
+        <div class="spinner"></div>
+        </div>
+    <div class="container-container"></div>`
+
 const token = sessionStorage.getItem('auth_token')
 
 const urlParams = new URLSearchParams(window.location.search)
@@ -284,6 +290,8 @@ if (token) {
         }})
         .then(response => response.json())
         .then(data => {
+            document.querySelector('.spinner-container').remove()
+
             const title = document.querySelector('.title')
             const titleBox = document.querySelector('.change-title')
 
@@ -357,21 +365,26 @@ if (token) {
             titleBox.style.width = `${titleWidth}px`
             
             titleBox.addEventListener('input', (event) => {
-                title.textContent = titleBox.value
-                
-                if (event.data === null) {
-                    let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
-                    title.style.width = `${titleWidth - charLength}px`
-                    title.classList.remove('hidden')
-                    titleWidth = title.getBoundingClientRect().width
-                    title.classList.add('hidden')
-                    titleBox.style.width = `${titleWidth}px`
+                if (titleBox.value.length > 20) {
+                    titleBox.value = titleBox.value.slice(0, 20)
+                    title.textContent = titleBox.value
                 } else {
-                    title.style.width = null
-                    title.classList.remove('hidden')
-                    titleWidth = title.getBoundingClientRect().width
-                    title.classList.add('hidden')
-                    titleBox.style.width = `${titleWidth}px`
+
+                    title.textContent = titleBox.value
+                    if (event.data === null) {
+                        let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
+                        title.style.width = `${titleWidth - charLength}px`
+                        title.classList.remove('hidden')
+                        titleWidth = title.getBoundingClientRect().width
+                        title.classList.add('hidden')
+                        titleBox.style.width = `${titleWidth}px`
+                    } else {
+                        title.style.width = null
+                        title.classList.remove('hidden')
+                        titleWidth = title.getBoundingClientRect().width
+                        title.classList.add('hidden')
+                        titleBox.style.width = `${titleWidth}px`
+                    }
                 }
             })
 
@@ -488,7 +501,6 @@ if (token) {
                     const dropTargetArray = Array.from(dropTarget.children)
                 
                     for (let i = dropTargetArray.indexOf(draggedTask); i < dropTargetArray.length; i++) {
-                        console.log(i)
                         dropPutRequest(dropTargetArray[i], i)
                     }
                 }

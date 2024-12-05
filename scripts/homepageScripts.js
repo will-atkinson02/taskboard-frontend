@@ -137,14 +137,10 @@ if (!token) {
     <div class="h1-container">
         <h1>Welcome ${sessionStorage.getItem('username')} to your home page!<h1>
     </div>
+    <div class="spinner-container">
+        <div class="spinner"></div>
+        </div>
     <div class="taskboards-container"></div>`
-
-    document.querySelector('.taskboards-container').innerHTML += `
-    <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
-        <i class="big-plus fa-solid fa-plus"></i>
-        <div class="taskboard-txt">New <br /> Taskboard</div>
-    </div>
-    `
 
     const getUserEndpoint = "http://127.0.0.1:8000/api/user/" + sessionStorage.getItem('username')
     fetch(getUserEndpoint, {
@@ -156,12 +152,22 @@ if (!token) {
     })
     .then(response => response.json())
     .then(data => {
+        document.querySelector('.spinner-container').remove()
+
+        document.querySelector('.taskboards-container').innerHTML += `
+            <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
+                <i class="big-plus fa-solid fa-plus"></i>
+                <div class="taskboard-txt">New <br /> Taskboard</div>
+            </div>`
+
         data.data.taskboards.forEach(taskboard => {
             document.querySelector('.taskboards-container').innerHTML += `
             <div class="taskboard">
                 <a class="taskboard-link" href="http://127.0.0.1:5500/taskboard.html?id=${taskboard.id}">
-                    <div class="taskboard-img"></div>
-                    <div class="taskboard-txt">${taskboard.name}</div>
+                    <canvas class="taskboard-img"></canvas>
+                    <div id="canvas" class="taskboard-txt-container">
+                        <div class="taskboard-txt">${taskboard.name}</div>
+                    </div>
                 </a>
             </div>`
         })

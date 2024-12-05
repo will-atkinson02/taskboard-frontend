@@ -13,7 +13,7 @@ body {
 header {
     /* Display */
     display: grid;
-    grid-template-columns: 85vw 10vw 5vw;
+    grid-template-columns: 870.4px 102.4px 51.2px;
     align-items: center;
     border-bottom: 1px white solid;
 
@@ -71,8 +71,8 @@ h1 {
 
 .h1-container {
     border-bottom: solid #211A1D 2px;
-    width: 90vw;
-    margin-left: 5vw;
+    width: 910px;
+    margin: 0 53px 0 53px;
 }
 
 .notifications-and-due {
@@ -167,9 +167,10 @@ label {
 
 .taskboards-container {
     /* Display */
-    display: flex;
-    flex-wrap: wrap;
-    margin: 20px;
+    display: grid;
+    grid-template-columns: 145.5px 145.5px 145.5px 145.5px 145.5px 145.5px;
+    justify-items: center;
+    margin: 20px 70px 0 70px;
 
     /* Text */
     text-align: center;
@@ -180,6 +181,8 @@ label {
     height: 150px;
     width: 120px;
     padding-top: 4px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
     border: solid transparent 1px;
     
     /* Colour */
@@ -195,6 +198,10 @@ label {
 }
 
 .taskboard-link {
+    /* Display */
+    display: flex;
+    flex-direction: column;
+
     /* Text */
     height: 150px;
     text-decoration: none;
@@ -205,9 +212,18 @@ label {
     width: 85%;
     height: 70%;
     margin: 7.5%;
+    margin-bottom: 0;
 
     /* Colour */
     background-color: white;
+}
+
+.taskboard-txt-container {
+    /* Display */
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .taskboard-txt {
@@ -216,6 +232,7 @@ label {
 
     /* Text */
     text-align: center;
+    vertical-align: middle;
     font-weight: 600;
 }
 
@@ -248,4 +265,32 @@ label {
     /* Text */
     text-align: center;
     font-size: 80px;
+}
+
+.spinner-container {
+    /* Display */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1023px;
+    height: 150px;
+}
+
+.spinner {
+    /* Display */
+    width: 25px;
+    height: 25px;
+    border: 12px solid #8c948c;
+    border-top: 12px solid #211A1D;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
