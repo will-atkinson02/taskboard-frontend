@@ -157,57 +157,64 @@ function submitStage(stage) {
     })
 }
 
-function sendTaskData() {
-    document.querySelectorAll('.add-task-expanded-container').forEach(newTaskForm => {
-        if (!newTaskForm.hasAttribute('submit-added')) {
-            newTaskForm.addEventListener('submit', (event) => {
-                event.preventDefault()
+function sendTaskDataRequest(event, newTaskForm) {
+    event.preventDefault()
 
-                let stage = newTaskForm.closest('.stage')
-                let dropTarget = stage.querySelector('.drop-target')
-                let numberOfTasks = dropTarget.childElementCount
+    let stage = newTaskForm.closest('.stage')
+    let dropTarget = stage.querySelector('.drop-target')
+    let numberOfTasks = dropTarget.childElementCount
 
-                let form = event.target
-                let formData = new FormData(form)
-                let jsonData = Object.fromEntries(formData.entries())
-                jsonData.position = numberOfTasks
-                jsonData.stage_id = parseInt(stage.id.slice(6))
+    let form = document.querySelector('.add-task-expanded-container')
+    let formData = new FormData(form)
+    let jsonData = Object.fromEntries(formData.entries())
+    jsonData.position = numberOfTasks
+    jsonData.stage_id = parseInt(stage.id.slice(6))
 
-                if (jsonData.name) {
-                    fetch("http://127.0.0.1:8000/api/task", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify(jsonData)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Response from server:", data)
-        
-                            document.querySelectorAll('.task-text').forEach(taskText => {
-                                if (taskText.textContent === jsonData.name) {
-                                    taskText.closest('.stage').querySelector('.task-name-input').value = ''
-                                    taskText.closest('.task').setAttribute('id', data.taskId)
-                                    taskText.closest('.task').setAttribute('draggable', 'true')
-                                    document.querySelectorAll('.task').forEach(task => {
-                                        taskDraggingEventListener(task)
-                                    })
-                                }
-                            })
+    if (jsonData.name) {
+        fetch("http://127.0.0.1:8000/api/task", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(jsonData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response from server:", data)
+
+                document.querySelectorAll('.task-text').forEach(taskText => {
+                    if (taskText.textContent === jsonData.name) {
+                        taskText.closest('.stage').querySelector('.task-name-input').value = ''
+                        taskText.closest('.task').setAttribute('id', data.taskId)
+                        taskText.closest('.task').setAttribute('draggable', 'true')
+                        document.querySelectorAll('.task').forEach(task => {
+                            taskDraggingEventListener(task)
                         })
-                        .catch(error => console.error("Error:", error))
-                }
-            }, { once: true })
-            newTaskForm.setAttribute('submit-added', 'true')
-        }
+                    }
+                })
+                
+                document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
+                    taskSubmitButton.removeAttribute('task-added')
+                })
+                //displayNewTaskTemp()
+            })
+            .catch(error => console.error("Error:", error))
+    }
+}
+
+function applySendTaskDataEV() {
+    document.querySelectorAll('.task-name-submit').forEach(newTaskForm => {
+        if (!newTaskForm.hasAttribute('listener-added')) {
+            newTaskForm.addEventListener('click', (event) => sendTaskDataRequest(event, newTaskForm))
+            newTaskForm.setAttribute('listener-added', 'true')
+        } 
     })  
 }
 
 function deleteStage() {
-    document.querySelectorAll('.name-and-delete').forEach(stageDeleteForm => {
-        stageDeleteForm.addEventListener('submit', (event) => {
+    document.querySelectorAll('.deleteStage').forEach(stageDeleteForm => {
+        stageDeleteForm.addEventListener('click', (event) => {
             event.preventDefault()
             const stage = stageDeleteForm.closest('.stage')
 
@@ -230,7 +237,7 @@ function deleteStage() {
 
 function displayNewTaskTemp() {
     document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-        if (!taskSubmitButton.hasAttribute('task-added')) {
+        if (!taskSubmitButton.hasAttribute('temp-listener-added')) {
             taskSubmitButton.addEventListener('click', () => {
                 const currentStage = taskSubmitButton.closest('.stage')
                 const inputValue = currentStage.querySelector('.task-name-input').value
@@ -244,7 +251,7 @@ function displayNewTaskTemp() {
                     currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
                 }
             })
-            taskSubmitButton.setAttribute('task-added', 'true')
+            taskSubmitButton.setAttribute('temp-listener-added', 'true')
         }
         
     })
@@ -306,15 +313,17 @@ if (token) {
                 <div class='stage' id="Stage ${stage.id}" ondragover='allowDrop(event)'>
                     <form class='name-and-delete'>
                         <div class='stage-name'>${stage.name}</div>
-                        <input class='deleteStage' type='submit' value='deleteStage'>
+                        <i class="more-options fa-solid fa-ellipsis-vertical">
+                            <div class='deleteStage hidden' type='submit'>Delete stage</div>
+                        </i>
                     </form>
                     <div class='drop-target'></div>
                     <div class='add-task-container'><i class="fa-solid fa-plus"></i> Add task</div>
                     <form class='add-task-expanded-container hidden'>
                         <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
-                        <div>
-                            <input class='task-name-submit' value='Add task' type='submit'>
-                            <button class='close-task-input'>x</button>
+                        <div class="submit-close-container">
+                            <button class='task-name-submit'>Add task</button>
+                            <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </form>
                 </div>
@@ -341,7 +350,7 @@ if (token) {
                 <input class="stage-name-input" type="text" name="name" placeholder="Enter stage name...">
                 <div>
                     <input class="stage-name-submit" value="Add stage" type="submit">
-                    <button class='close-stage-input'>x</button>
+                    <button class='close-stage-input'><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </form>
             `
@@ -369,7 +378,6 @@ if (token) {
                     titleBox.value = titleBox.value.slice(0, 20)
                     title.textContent = titleBox.value
                 } else {
-
                     title.textContent = titleBox.value
                     if (event.data === null) {
                         let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
@@ -389,11 +397,10 @@ if (token) {
             })
 
             // Tasks
-            sendTaskData()
+            applySendTaskDataEV()
 
             // Display independent server-side task
             displayNewTaskTemp()
-
 
             // Add new stage
             document.querySelector('.new-stage-expanded-container').addEventListener('submit', (event) => {
@@ -427,8 +434,9 @@ if (token) {
                                     })
                                 }
                             })
-                            sendTaskData()
+                            applySendTaskDataEV()
                             displayNewTaskTemp()
+                            
                         })
                         .catch(error => console.error("Error:", error))
                 }
@@ -441,15 +449,17 @@ if (token) {
                         <div class='stage' id="" ondragover='allowDrop(event)'>
                             <form class='name-and-delete'>
                                 <div class='stage-name'>${inputValue}</div>
-                                <input class='deleteStage' name='$name' type='submit' value='deleteStage'>
+                                <i class="more-options fa-solid fa-ellipsis-vertical">
+                                    <div class='deleteStage hidden' type='submit'>Delete stage</div>
+                                </i>
                             </form>
                             <div class='drop-target'></div>
-                            <div class='add-task-container'>+ Add Card</div>
+                            <div class='add-task-container'><i class="fa-duotone fa-solid fa-plus"></i> Add task</div>
                             <form class='add-task-expanded-container hidden'>
                                 <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
                                 <div>
-                                    <input class='task-name-submit' value='Add task' type='submit'>
-                                    <button class='close-task-input'>x</button>
+                                    <button class='task-name-submit'>Add task</button>
+                                    <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
                                 </div>
                             </form>
                         </div>
@@ -508,6 +518,14 @@ if (token) {
 
             // Handle all clicks
             window.addEventListener("click", (event) => {
+                // more options
+                if (event.target.classList.contains('more-options')) {
+                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
+                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
+                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
+                }
+                
+                // title functionality
                 if (event.target.classList.contains('title')) {
                     title.classList.add('hidden')
                     titleBox.classList.remove('hidden')
@@ -525,9 +543,9 @@ if (token) {
                     titleBox.classList.add('hidden')
                 }
 
+                // new stage
                 const newStageClicked = event.target.closest('.new-stage-container')
                 const newStageExpandedClicked = event.target.closest('.new-stage-expanded-container')
-
                 if (newStageClicked) {
                     newStage.classList.add('hidden')
                     newStageExpanded.classList.remove('hidden')
@@ -536,8 +554,8 @@ if (token) {
                     newStageExpanded.classList.add('hidden')
                 }
 
+                // add tasks
                 const inAddTaskExpanded = event.target.closest('.add-task-expanded-container')
-
                 if (event.target.classList.contains('add-task-container')) {
                     const stageClosest = event.target.closest('.stage')
 

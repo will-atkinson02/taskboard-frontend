@@ -134,17 +134,17 @@ i {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    align-items: center;
+    align-items: start;
     flex-shrink: 0;
-    width: 200px;
+    width: 190px;
     height: 60px;
     border-radius: 10px;
-    padding-left: 5px;
+    padding: 0 5px 0 5px;
     margin: 20px;
 
     /* Colour */
     color: black;
-    background-color: white;
+    background-color: #CAD5CA;
 }
 
 
@@ -152,7 +152,7 @@ i {
     /* Display */
     flex-shrink: 0;
     align-items: center;
-    width: 200px;
+    width: 190px;
     border-radius: 10px;
     margin: 20px;
     padding-left: 5px;
@@ -171,6 +171,7 @@ i {
     height: 30px;
     padding-left: 5px;
     padding-top: 5px;
+    border-bottom: #3b2f34 1px solid;
 }
 
 .stage-name {
@@ -178,16 +179,106 @@ i {
     font-weight: 600;
 }
 
-.deleteStage {
+.stage-name-input {
     /* Display */
-    height: 20px;
+    width: 96%;
+}
+
+.stage-name-submit {
+    all: unset;
+
+    /* Display */
+    height: 25px;
+    width: 80px;
+    border-radius: 99px;
+
+    /* Colour */
+    background-color: rgb(55, 55, 251);
+    color: white;
+
+    /* Text */
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stage-name-submit:hover {
+    /* Colour */
+    background-color: rgb(112, 112, 249);
+
+    cursor: pointer;
+}
+
+.close-stage-input {
+    all: unset;
+
+    /* Display */
+    height: 22px;
+    width: 25px;
+    border: transparent solid 1px;
+    padding-top: 1.5px;
+    border-radius: 99px;
+
+    /* Colour */
+    color: black;
+
+    /* Text */
+    text-align: center;
+    vertical-align: bottom;
+    font-size: 15px;
+}
+
+.close-stage-input:hover {
+    /* Display */
+    border: #3b2f34 solid 1px;
+
+    /* Colour */
+    background-color: #8c948c;
+
+    cursor: pointer;
+}
+
+.more-options {
+    /* Position */
+    position: relative;
+    
+}
+
+.deleteStage {
+    /* Position */
+    position: absolute;
+    left: -10px;
+    top: -12px;
+
+    /* Display */
+    height: 15px;
+    width: 100px;
+    border: red solid 1px;
+    border-radius: 5px;
+    padding: 10px 0 10px 0;
+
+    /* Colour */
+    background-color: white;
+
+    /* Text */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    text-align: center;
+}
+
+.deleteStage:hover {
+    /* Colour */
+    background-color: rgb(167, 159, 159);
+
+    cursor: pointer;
 }
 
 .task {
     /* Display */
     display: flex;
     align-items: center;
-    width: 200px;
+    width: 190px;
     height: 30px;
     border-radius: 10px;
     margin-top: 5px;
@@ -225,6 +316,72 @@ i {
 .add-task-container:hover {
     /* Colour */
     background-color: #acbcac;
+}
+
+.task-name-input {
+    /* Display */
+    width: 96%;
+    margin: 4px 0 4px 0;
+    
+}
+
+.submit-close-container {
+    /* Display */
+    margin-bottom: 3px;
+}
+
+.task-name-submit {
+    all: unset;
+
+    /* Display */
+    height: 20px;
+    width: 60px;
+    border-radius: 99px;
+
+    /* Colour */
+    background-color: rgb(55, 55, 251);
+    color: white;
+
+    /* Text */
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.task-name-submit:hover {
+    /* Colour */
+    background-color: rgb(112, 112, 249);
+
+    cursor: pointer;
+}
+
+.close-task-input {
+    all: unset;
+
+    /* Display */
+    height: 18px;
+    width: 19px;
+    border: transparent solid 1px;
+    padding-top: 1.5px;
+    border-radius: 99px;
+
+    /* Colour */
+    color: black;
+
+    /* Text */
+    text-align: center;
+    vertical-align: bottom;
+    font-size: 11px;
+}
+
+.close-task-input:hover {
+    /* Display */
+    border: #3b2f34 solid 1px;
+
+    /* Colour */
+    background-color: #8c948c;
+
+    cursor: pointer;
 }
 
 .drop-target {
