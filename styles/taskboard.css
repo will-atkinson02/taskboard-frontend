@@ -278,6 +278,7 @@ i {
     /* Display */
     display: flex;
     align-items: center;
+    justify-content: space-between;
     width: 190px;
     height: 30px;
     border-radius: 10px;
@@ -289,6 +290,14 @@ i {
     background-color: #8c948c;
 }
 
+.task:hover {
+    /* Colour */
+    color: #211A1D;
+    background-color: #5c615c;
+
+    cursor: pointer;
+}
+
 .task-text {
     /* Display */
     padding-left: 5px;
@@ -296,6 +305,11 @@ i {
     /* Font */ 
     font-size: 15px;
     font-weight: 200;
+}
+
+.more-button {
+    /* Font */
+    font-size: 10px;
 }
 
 .add-task-container {
@@ -393,7 +407,7 @@ i {
     /* Display */
     display: flex;
     align-items: center;
-    width: 200px;
+    width: 190px;
     height: 30px;
     border-radius: 10px;
     margin-top: 5px;

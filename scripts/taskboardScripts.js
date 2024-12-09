@@ -6,27 +6,18 @@ function isAfter(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_PRECEDING;
 }
 
-function addTaskDropArea(id) {
-    if (isDragging) {
-        const dropzoneDiv = document.createElement("div")
-
-        dropzoneDiv.classList.add('drop-placeholder-task')
-
-        const dropTarget = document.getElementById(id).closest(".drop-target")
-
-        dropTarget.insertBefore(dropzoneDiv, document.getElementById(id))
-    }
+function createDropPlaceholder() {
+    const placeholder = document.createElement("div")
+    placeholder.classList.add('drop-placeholder-task')
+    return placeholder
 }
 
-function addTaskDropAreaAfter(id) {
-    if (isDragging) {
-        const dropzoneDiv = document.createElement("div")
-
-        dropzoneDiv.classList.add('drop-placeholder-task')
-
-        const taskTarget = document.getElementById(id)
-
-        taskTarget.insertAdjacentElement('afterend', dropzoneDiv)
+function insertDropPlaceholder(target, position = 'before') {
+    const placeholder = createDropPlaceholder()
+    if (position === 'after') {
+        target.insertAdjacentElement('beforebegin', placeholder)
+    } else {
+        target.insertAdjacentElement('afterend', placeholder)
     }
 }
 
@@ -53,10 +44,7 @@ function dropPutRequest(draggedTask, position) {
 
     fetch(url, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
+        headers: HEADERS,
         body: JSON.stringify(data)
     })
         .then(response => response.json())
@@ -71,58 +59,63 @@ function taskDraggingEventListener(task) {
         elementId = event.target.id
         draggedTask = document.getElementById(elementId)
         isDragging = true
+        console.log('drag started')
     })
 
     task.addEventListener('drag', (event) => {
-        if (event.target.id === elementId) {
-            addTaskDropArea(elementId)
-            draggedTask.remove()
+        if (draggedTask) {
+            if (event.target.id === elementId) {
+                insertDropPlaceholder(draggedTask)
+                draggedTask.remove()
+            }
         }
     })
 
     task.addEventListener('dragenter', (event) => {
         if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) {
             let taskBelow = event.target
+            let draggedTask = document.getElementById(elementId)
 
             if (event.target.classList.contains('task-text')) {
                 taskBelow = event.target.closest('.task')
             }
 
             if (!document.querySelector('.drop-placeholder-task')) {
-                if (!document.getElementById(elementId).closest('.stage').contains(taskBelow)) {
-                    addTaskDropArea(taskBelow.id)
+                if (!draggedTask.closest('.stage').contains(taskBelow)) {
+                    insertDropPlaceholder(taskBelow)
                 } else {
-                    if (isBefore(document.getElementById(elementId), taskBelow)) {
-                        if (document.getElementById(elementId).nextSibling === taskBelow) {
-                            taskBelow.closest('.drop-target').insertBefore(taskBelow, document.getElementById(elementId))
-                            addTaskDropArea(elementId)
+                    if (isBefore(draggedTask, taskBelow)) {
+                        if (draggedTask.nextSibling === taskBelow) {
+                            taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
+                            insertDropPlaceholder(draggedTask)
                             draggedTask.remove()
                         } else {
-                            addTaskDropAreaAfter(taskBelow.id)
+                            insertDropPlaceholder(taskBelow, 'after')
                             draggedTask.remove()
                         }
-                    } else if (isAfter(document.getElementById(elementId), taskBelow)) {
-                        if (document.getElementById(elementId).previousSibling === taskBelow) {
-                            addTaskDropArea(taskBelow.id)
+                    } else if (isAfter(draggedTask, taskBelow)) {
+                        if (draggedTask.previousSibling === taskBelow) {
+                            insertDropPlaceholder(taskBelow)
                             draggedTask.remove()
                         } else {
-                            addTaskDropArea(taskBelow.id)
+                            insertDropPlaceholder(taskBelow)
                             draggedTask.remove()
                         }
                     }
                 }
             } else {
-                if (isBefore(document.querySelector('.drop-placeholder-task'), taskBelow)) {
-                    if (document.querySelector('.drop-placeholder-task').nextSibling === taskBelow) {
-                        taskBelow.closest('.drop-target').insertBefore(taskBelow, document.querySelector('.drop-placeholder-task'))
+                let placeholderTask = document.querySelector('.drop-placeholder-task')
+                if (isBefore(placeholderTask, taskBelow)) {
+                    if (placeholderTask.nextSibling === taskBelow) {
+                        taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
                     } else {
-                        taskBelow.closest('.drop-target').insertBefore(taskBelow, document.querySelector('.drop-placeholder-task'))
+                        taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
                     }
-                } else if (isAfter(document.querySelector('.drop-placeholder-task'), taskBelow)) {
-                    if (document.querySelector('.drop-placeholder-task').previousSibling === taskBelow) {
-                        document.querySelector('.drop-placeholder-task').insertAdjacentElement('afterend', taskBelow)
+                } else if (isAfter(placeholderTask, taskBelow)) {
+                    if (placeholderTask.previousSibling === taskBelow) {
+                        placeholderTask.insertAdjacentElement('afterend', taskBelow)
                     } else {
-                        document.querySelector('.drop-placeholder-task').insertAdjacentElement('afterend', taskBelow)
+                        placeholderTask.insertAdjacentElement('afterend', taskBelow)
                     }
                 }
             }
@@ -130,7 +123,7 @@ function taskDraggingEventListener(task) {
     })
 }
 
-function submitStage(stage) {
+function onStageEnter(stage) {
     stage.addEventListener('dragenter', (event) => {
         if (!event.target.classList.contains('task')
             && !event.target.classList.contains('task-text')
@@ -145,13 +138,9 @@ function submitStage(stage) {
                     document.getElementById(elementId).remove()
                 }
 
-                const dropzoneDiv = document.createElement("div")
-
-                dropzoneDiv.classList.add('drop-placeholder-task')
-
+                const placeholder = createDropPlaceholder()
                 const dropTarget = stage.querySelector('.drop-target')
-
-                dropTarget.appendChild(dropzoneDiv)
+                dropTarget.appendChild(placeholder)
             }
         }
     })
@@ -173,10 +162,7 @@ function sendTaskDataRequest(event, newTaskForm) {
     if (jsonData.name) {
         fetch("http://127.0.0.1:8000/api/task", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
+            headers: HEADERS,
             body: JSON.stringify(jsonData)
         })
             .then(response => response.json())
@@ -226,7 +212,7 @@ function deleteStage() {
 
             fetch(url, {
                 method: "DELETE",
-                headers: {"Authorization": `Bearer ${token}`}
+                headers: HEADERS
             })
                 .then(response => response.json())
                 .then(data => console.log("Response from server:", data))
@@ -247,6 +233,9 @@ function displayNewTaskTemp() {
                         <div class='task-text'>${inputValue}</div>
                     </div>`
 
+                    // if task has description or colour
+                    // add icon plus colour
+
                     currentStage.querySelector('.add-task-container').classList.remove('hidden')
                     currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
                 }
@@ -262,10 +251,7 @@ function changeTitleRequest(taskboardId, token, jsonData) {
 
     fetch(url, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
+        headers: HEADERS,
         body: JSON.stringify(jsonData)
     })
     .then(response => response.json())
@@ -282,19 +268,23 @@ document.querySelector('body').innerHTML += `
     <div class="container-container"></div>`
 
 const token = sessionStorage.getItem('auth_token')
-
 const urlParams = new URLSearchParams(window.location.search)
 const taskboardId = urlParams.get('id')
-
 const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
+const HEADERS = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+}
+
+// initial states
+let draggedTask = null
+let isDragging = false
 
 if (token) {
     fetch(taskboardUrl, {
         method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }})
+        headers: HEADERS
+        })
         .then(response => response.json())
         .then(data => {
             document.querySelector('.spinner-container').remove()
@@ -332,10 +322,13 @@ if (token) {
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
-                    <div class='task' id=${task.id} draggable='true' ondragstart='drag(event)'>
+                    <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
                         <div class='task-text'>${task.name}</div>
                     </div>
                     `
+
+                    // if task has description or colour
+                    // add icon plus colour
                 })
             })
 
@@ -414,10 +407,7 @@ if (token) {
                 if (jsonData.name) {
                     fetch("http://127.0.0.1:8000/api/stage", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
+                        headers: HEADERS,
                         body: JSON.stringify(jsonData)
                     })
                         .then(response => response.json())
@@ -429,7 +419,7 @@ if (token) {
                                     stageName.closest('.stage').setAttribute('id', 'Stage ' + data.stageId)
                                     document.querySelector('.stage-name-input').value = ''
                                     document.querySelectorAll('.stage').forEach(stage => {
-                                        submitStage(stage)
+                                        onStageEnter(stage)
                                         deleteStage()
                                     })
                                 }
@@ -484,7 +474,7 @@ if (token) {
 
             // Handle task placeholder transfer between stage
             document.querySelectorAll('.stage').forEach(stage => {
-                submitStage(stage)
+                onStageEnter(stage)
             })
 
             const newStage = document.querySelector('.new-stage-container')
@@ -509,15 +499,23 @@ if (token) {
                 if (event.target.closest('.stage') || placeholder) {
                     const dropTarget = stage.querySelector('.drop-target')
                     const dropTargetArray = Array.from(dropTarget.children)
-                
-                    for (let i = dropTargetArray.indexOf(draggedTask); i < dropTargetArray.length; i++) {
-                        dropPutRequest(dropTargetArray[i], i)
+                    
+                    for (let i = 0; i < dropTargetArray.length; i++) {
+                        if (dropTargetArray[i].getAttribute('position') != i) {
+                            dropPutRequest(dropTargetArray[i], i)
+                        }
                     }
                 }
             })
 
             // Handle all clicks
             window.addEventListener("click", (event) => {
+                // if task
+                if (event.target.classList.contains('task')) {
+                    // Expand to show all details
+                    console.log('task clicked')
+                }
+
                 // more options
                 if (event.target.classList.contains('more-options')) {
                     event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
