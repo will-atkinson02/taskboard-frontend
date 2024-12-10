@@ -322,8 +322,18 @@ if (token) {
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
-                    <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
-                        <div class='task-text'>${task.name}</div>
+                    <div class="task-container">
+                        <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
+                            <div class='task-text'>${task.name}</div>
+                        </div>
+                        <div class='hidden task-expanded-container'>
+                            <div class='expanded-task-text'>
+                                <div class='task-name'>${task.name}</div>
+                                <input class='hidden task-name-input' type='text' value=''>
+                            </div>
+                            <div class='task-description'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus in nisi in magna elementum vestibulum. Integer id tristique mi. Quisque egestas fringilla malesuada.nec consequat vitae ipsum ut eleifend.</div>
+                            <input class='hidden task-description-input' type='text' value=''>
+                        </div>
                     </div>
                     `
 
@@ -509,11 +519,20 @@ if (token) {
             })
 
             // Handle all clicks
+            let task = null
+            let taskExpanded = null
             window.addEventListener("click", (event) => {
-                // if task
-                if (event.target.classList.contains('task')) {
-                    // Expand to show all details
-                    console.log('task clicked')
+                if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
+                    if (task) {
+                        task.classList.remove('hidden')
+                        taskExpanded.classList.add('hidden')
+                    }
+
+                    task = event.target.closest('.task')
+                    taskExpanded = task.nextElementSibling
+                    taskExpanded.classList.remove('hidden')
+                } else if (!event.target.classList.contains('task-expanded-container')) {
+                    taskExpanded.classList.add('hidden')
                 }
 
                 // more options

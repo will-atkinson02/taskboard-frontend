@@ -274,6 +274,11 @@ i {
     cursor: pointer;
 }
 
+.task-container {
+    /* Position */
+    position: relative;
+}
+
 .task {
     /* Display */
     display: flex;
@@ -310,6 +315,47 @@ i {
 .more-button {
     /* Font */
     font-size: 10px;
+}
+
+.task-expanded-container {
+    /* Position */
+    position: absolute;
+    top: 0;
+    z-index: 2;
+
+    /* Display */
+    height: 200px;
+    width: 190px;
+    border-radius: 10px;
+
+    /* Colour */
+    color: #211A1D;
+    background-color: #8c948c;
+} 
+
+.expanded-task-text {
+    /* Display */
+    display: flex;
+    width: 180px;
+    border-bottom: #211A1D solid 1px;
+    margin: 0 5px 0 5px;
+}
+
+.task-name {
+    /* Display */
+    padding: 6.5px 0 4px 0;
+
+    /* Font */ 
+    font-size: 15px;
+    font-weight: 200;
+}
+
+.task-description {
+    /* Display */
+    margin: 2px 10px 5px 10px;
+
+    /* Font */ 
+    font-size: 12px;
 }
 
 .add-task-container {
