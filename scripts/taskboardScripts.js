@@ -304,7 +304,7 @@ if (token) {
                     <form class='name-and-delete'>
                         <div class='stage-name'>${stage.name}</div>
                         <i class="more-options fa-solid fa-ellipsis-vertical">
-                            <div class='deleteStage hidden' type='submit'>Delete stage</div>
+                            <div class='deleteStage hidden' type='submit'>Delete stage <i class="fa-solid fa-trash"></i></div>
                         </i>
                     </form>
                     <div class='drop-target'></div>
@@ -331,8 +331,19 @@ if (token) {
                                 <div class='task-name'>${task.name}</div>
                                 <input class='hidden task-name-input' type='text' value=''>
                             </div>
+                            
+                            <div class='description-title'>Description:</div>
                             <div class='task-description'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus in nisi in magna elementum vestibulum. Integer id tristique mi. Quisque egestas fringilla malesuada.nec consequat vitae ipsum ut eleifend.</div>
-                            <input class='hidden task-description-input' type='text' value=''>
+                            <form class='hidden task-description-form'>
+                                <textarea class='task-description-input' type='text' value=''></textarea>
+                                <button class='task-description-submit'>Add task</button>
+                                <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
+                            </form> 
+                            <div class='task-description-spacer'></div>
+                            <div class='colour-container'>
+                                <div class="colour-title">Colour: </div>
+                                <div class='task-colour'></div>
+                            </div>
                         </div>
                     </div>
                     `
@@ -372,32 +383,7 @@ if (token) {
                 }
             })
 
-            // Dynamic title input code
-            let titleWidth = title.getBoundingClientRect().width
-            titleBox.style.width = `${titleWidth}px`
             
-            titleBox.addEventListener('input', (event) => {
-                if (titleBox.value.length > 20) {
-                    titleBox.value = titleBox.value.slice(0, 20)
-                    title.textContent = titleBox.value
-                } else {
-                    title.textContent = titleBox.value
-                    if (event.data === null) {
-                        let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
-                        title.style.width = `${titleWidth - charLength}px`
-                        title.classList.remove('hidden')
-                        titleWidth = title.getBoundingClientRect().width
-                        title.classList.add('hidden')
-                        titleBox.style.width = `${titleWidth}px`
-                    } else {
-                        title.style.width = null
-                        title.classList.remove('hidden')
-                        titleWidth = title.getBoundingClientRect().width
-                        title.classList.add('hidden')
-                        titleBox.style.width = `${titleWidth}px`
-                    }
-                }
-            })
 
             // Tasks
             applySendTaskDataEV()
@@ -518,22 +504,68 @@ if (token) {
                 }
             })
 
+            // Dynamic title input code
+            let titleWidth = title.getBoundingClientRect().width
+            titleBox.style.width = `${titleWidth}px`
+            
+            titleBox.addEventListener('input', (event) => {
+                if (titleBox.value.length > 20) {
+                    titleBox.value = titleBox.value.slice(0, 20)
+                    title.textContent = titleBox.value
+                } else {
+                    title.textContent = titleBox.value
+                    if (event.data === null) {
+                        let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
+                        title.style.width = `${titleWidth - charLength}px`
+                        title.classList.remove('hidden')
+                        titleWidth = title.getBoundingClientRect().width
+                        title.classList.add('hidden')
+                        titleBox.style.width = `${titleWidth}px`
+                    } else {
+                        title.style.width = null
+                        title.classList.remove('hidden')
+                        titleWidth = title.getBoundingClientRect().width
+                        title.classList.add('hidden')
+                        titleBox.style.width = `${titleWidth}px`
+                    }
+                }
+            })
+
             // Handle all clicks
             let task = null
             let taskExpanded = null
+            let taskDesc = null
+            let taskDescForm = null
             window.addEventListener("click", (event) => {
+                // task description
+                if (event.target.classList.contains('task-description')) {
+                    taskDesc = event.target
+                    taskDescForm = event.target.closest('.task-expanded-container').querySelector('.task-description-form')
+                    taskDescForm.querySelector('.task-description-input').style.height = `${taskDesc.getBoundingClientRect().height - 1.077}px` 
+                    taskDescForm.querySelector('.task-description-input').value = taskDesc.textContent
+                    taskDesc.classList.add('hidden')
+                    taskDescForm.classList.remove('hidden')
+                } else if (taskDesc) {
+                    if (!event.target.classList.contains('task-description-input')) {
+                        taskDesc.classList.remove('hidden')
+                        taskDescForm.classList.add('hidden')
+                    }
+                }
+
+                // task expand
                 if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
                     if (task) {
                         task.classList.remove('hidden')
                         taskExpanded.classList.add('hidden')
                     }
-
                     task = event.target.closest('.task')
                     taskExpanded = task.nextElementSibling
                     taskExpanded.classList.remove('hidden')
-                } else if (!event.target.classList.contains('task-expanded-container')) {
-                    taskExpanded.classList.add('hidden')
-                }
+                } else if (taskExpanded) {
+                    if (!event.target.closest('.task-expanded-container')) {
+                        taskExpanded.classList.add('hidden')
+                    }
+                } 
 
                 // more options
                 if (event.target.classList.contains('more-options')) {

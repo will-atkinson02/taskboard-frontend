@@ -255,9 +255,10 @@ i {
     width: 100px;
     border: red solid 1px;
     border-radius: 5px;
-    padding: 10px 0 10px 0;
+    padding: 10px 0 10px 3px;
 
     /* Colour */
+    color: rgb(131, 5, 5);
     background-color: white;
 
     /* Text */
@@ -324,7 +325,6 @@ i {
     z-index: 2;
 
     /* Display */
-    height: 200px;
     width: 190px;
     border-radius: 10px;
 
@@ -347,15 +347,146 @@ i {
 
     /* Font */ 
     font-size: 15px;
-    font-weight: 200;
+    font-weight: 600;
+}
+
+.colour-container {
+    /* Display */
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0 10px 5px;
+
+    /* Font */ 
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.task-colour {
+    /* Display */
+    align-self: stretch;
+    width: 60%;
+    margin-right: 12px;
+    border: transparent solid 1px;
+    border-radius: 99px;
+
+    /* Colour */
+    background-color: blue;
+}
+
+.task-colour:hover {
+    /* Display */
+    border: white solid 1px;
+
+    cursor: pointer;
+}
+
+.description-title {
+    /* Display */
+    margin: 5px 0 5px 5px;
+
+    /* Font */ 
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.task-description-spacer {
+    /* Display */
+    height: 1px;
+    width: 180px;
+    margin-left: 5px;
+    border-bottom: #211A1D solid 1px;
 }
 
 .task-description {
     /* Display */
-    margin: 2px 10px 5px 10px;
+    border: transparent solid 1px;
+    margin: 2px 5px 1px 5px;
 
     /* Font */ 
     font-size: 12px;
+}
+
+.task-description:hover {
+    /* Display */
+    border: #716d6f solid 1px;
+
+    /* Colour */
+    background-color: #acbcac;
+
+    cursor: pointer;
+}
+
+.task-description-input {
+    all: unset;
+
+    /* Display */
+    margin: 0 5px 0 5px;
+    width: 178.33px;
+    border: #211A1D solid 1px;
+
+    /* Colour */
+    background-color: #ffffff;
+
+    /* Text */ 
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+.task-description-submit {
+    all: unset;
+
+    /* Display */
+    height: 20px;
+    width: 60px;
+    border-radius: 99px;
+    margin-left: 5px;
+    margin-bottom: 3px;
+
+    /* Colour */
+    background-color: rgb(55, 55, 251);
+    color: white;
+
+    /* Text */
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.task-description-submit:hover {
+    /* Colour */
+    background-color: rgb(112, 112, 249);
+
+    cursor: pointer;
+}
+
+.close-description-input {
+    all: unset;
+
+    /* Display */
+    height: 18px;
+    width: 19px;
+    border: transparent solid 1px;
+    padding-top: 1.5px;
+    border-radius: 99px;
+    margin-bottom: 3px;
+
+    /* Colour */
+    color: black;
+
+    /* Text */
+    text-align: center;
+    vertical-align: bottom;
+    font-size: 11px;
+}
+
+.close-description-input:hover {
+    /* Display */
+    border: #3b2f34 solid 1px;
+
+    /* Colour */
+    background-color: #8c948c;
+
+    cursor: pointer;
 }
 
 .add-task-container {
