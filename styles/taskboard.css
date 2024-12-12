@@ -401,9 +401,12 @@ i {
     /* Display */
     border: transparent solid 1px;
     margin: 2px 5px 1px 5px;
+    min-height: 13.9px;
+    max-height: 206px;
 
     /* Font */ 
     font-size: 12px;
+    word-break: break-word;
 }
 
 .task-description:hover {
@@ -421,6 +424,7 @@ i {
 
     /* Display */
     margin: 0 5px 0 5px;
+    height: 206px;
     width: 178.33px;
     border: #211A1D solid 1px;
 
@@ -429,7 +433,9 @@ i {
 
     /* Text */ 
     font-size: 12px;
-    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+
 }
 
 .task-description-submit {

@@ -321,6 +321,13 @@ if (token) {
                 
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
+                    let description = task.description
+                    let textareaDescription = description
+                    if (!description) {
+                        description = 'Click here to add a description...'
+                        textareaDescription = ''
+                    }
+
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
                     <div class="task-container">
                         <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
@@ -333,9 +340,9 @@ if (token) {
                             </div>
                             
                             <div class='description-title'>Description:</div>
-                            <div class='task-description'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus in nisi in magna elementum vestibulum. Integer id tristique mi. Quisque egestas fringilla malesuada.nec consequat vitae ipsum ut eleifend.</div>
+                            <div class='task-description' maxlength="255">${description}</div>
                             <form class='hidden task-description-form'>
-                                <textarea class='task-description-input' type='text' value=''></textarea>
+                                <textarea class='task-description-input' type='text'  placeholder='Add a description...'>${textareaDescription}</textarea>
                                 <button class='task-description-submit'>Add task</button>
                                 <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
                             </form> 
@@ -531,6 +538,19 @@ if (token) {
                 }
             })
 
+            document.querySelectorAll('.task-description-form').forEach(form => {
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault()
+                    const description = form.closest('.task-expanded-container').querySelector('.task-description')
+                    description.textContent = form.querySelector('.task-description-input').value
+
+                    if (form.querySelector('.task-description-input').value === '') {
+                        description.textContent = 'Click here to add a description...'
+                    }
+                })
+            })
+
+
             // Handle all clicks
             let task = null
             let taskExpanded = null
@@ -541,8 +561,9 @@ if (token) {
                 if (event.target.classList.contains('task-description')) {
                     taskDesc = event.target
                     taskDescForm = event.target.closest('.task-expanded-container').querySelector('.task-description-form')
-                    taskDescForm.querySelector('.task-description-input').style.height = `${taskDesc.getBoundingClientRect().height - 1.077}px` 
-                    taskDescForm.querySelector('.task-description-input').value = taskDesc.textContent
+                    if (taskDesc.textContent != 'Click here to add a description...') {
+                        taskDescForm.querySelector('.task-description-input').textContent = taskDesc.textContent
+                    }
                     taskDesc.classList.add('hidden')
                     taskDescForm.classList.remove('hidden')
                 } else if (taskDesc) {
@@ -551,6 +572,8 @@ if (token) {
                         taskDescForm.classList.add('hidden')
                     }
                 }
+
+                //if (event.target.contains())
 
                 // task expand
                 if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
