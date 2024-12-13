@@ -149,19 +149,21 @@ function onStageEnter(stage) {
 function sendTaskDataRequest(event, newTaskForm) {
     event.preventDefault()
 
-    console.log('aa')
+    //containers
+    const stage = newTaskForm.closest('.stage')
+    const dropTarget = stage.querySelector('.drop-target')
 
-    let stage = newTaskForm.closest('.stage')
-    let dropTarget = stage.querySelector('.drop-target')
-    let numberOfTasks = dropTarget.childElementCount
+    //elements with required values
+    const taskNameInput = newTaskForm.closest('.add-task-expanded-container').querySelector('.task-name-input')
+    const numberOfTasks = dropTarget.childElementCount
 
-    let form = document.querySelector('.add-task-expanded-container')
-    let formData = new FormData(form)
-    let jsonData = Object.fromEntries(formData.entries())
-    jsonData.position = numberOfTasks
-    jsonData.stage_id = parseInt(stage.id.slice(6))
+    const jsonData = {
+        "name": taskNameInput.value,
+        "position": numberOfTasks,
+        "stage_id": parseInt(stage.id.slice(6))
+    }
 
-    if (jsonData.name) {
+    if (jsonData.name != '') {
         fetch("http://127.0.0.1:8000/api/task", {
             method: "POST",
             headers: HEADERS,
@@ -234,7 +236,7 @@ function displayNewTaskTemp() {
                 if (inputValue) {
                     currentStage.querySelector('.drop-target').innerHTML += `
                     <div class="task-container">
-                        <div class='task' id='' position='${numberOfTasks + 1}' draggable='true' ondragstart='drag(event)'>
+                        <div class='task' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
                             <div class='task-text'>${inputValue}</div>
                         </div>
                         <div class='hidden task-expanded-container'>
@@ -345,15 +347,18 @@ if (token) {
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
                     let description = task.description
                     let textareaDescription = description
+                    let descriptionIndicator = "<i class='description-indicator fa-solid fa-bars'></i>"
                     if (!description) {
                         description = 'Click here to add a description...'
                         textareaDescription = ''
+                        descriptionIndicator = ''
                     }
 
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
                     <div class="task-container">
                         <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
                             <div class='task-text'>${task.name}</div>
+                            ${descriptionIndicator}
                         </div>
                         <div class='hidden task-expanded-container'>
                             <div class='expanded-task-text'>
@@ -612,13 +617,27 @@ if (token) {
                 }
 
                 if (event.target.classList.contains('task-description-submit')) {
+                    event.preventDefault()
+
+                    const task = event.target.closest('.task-container').querySelector('.task')
+                    const descriptionInput = event.target.previousSibling.previousSibling.value.trim()
+                    const descriptionElement = task.closest('.task-container').querySelector('.task-description') 
                     const data = {
-                        "description": event.target.previousSibling.previousSibling.value,
+                        "description": descriptionInput
+                    }
+
+                    if (descriptionElement.textContent === 'Click here to add a description...' && descriptionInput != '') {
+                        task.innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
                     }
                     
-                    const taskId = event.target.closest('.task-container').querySelector('.task').id
-                    const url = "http://127.0.0.1:8000/api/task/" + taskId
-                
+                    if (descriptionInput != '') {
+                        descriptionElement.textContent = descriptionInput
+                    } else {
+                        descriptionElement.textContent = 'Click here to add a description...'
+                        task.querySelector('.description-indicator').remove() 
+                    }
+
+                    const url = "http://127.0.0.1:8000/api/task/" + task.id
                     fetch(url, {
                         method: "PUT",
                         headers: HEADERS,
