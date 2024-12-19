@@ -96,6 +96,7 @@ header {
     /* Display */
     display: flex;
     align-items: flex-start;
+    
 }
 
 .new-stage-container {

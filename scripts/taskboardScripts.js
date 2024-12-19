@@ -548,17 +548,12 @@ if (token) {
                 }
             })
 
-            document.querySelectorAll('.task-description-form').forEach(form => {
-                form.addEventListener('submit', (event) => {
-                    event.preventDefault()
-                    const description = form.closest('.task-expanded-container').querySelector('.task-description')
-                    description.textContent = form.querySelector('.task-description-input').value
-
-                    if (form.querySelector('.task-description-input').value === '') {
-                        description.textContent = 'Click here to add a description...'
-                    }
-                })
-            })
+            // document.querySelectorAll('.task-description-form').forEach(form => {
+            //     const description = form.closest('.task-expanded-container').querySelector('.task-description')
+            //     if (form.querySelector('.task-description-input').value === '') {
+            //         description.textContent = 'Click here to add a description...'
+            //     }
+            // })
 
             // Handle all clicks
             let task = null
@@ -587,7 +582,6 @@ if (token) {
 
                 // task expand
                 if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
-                    console.log('task clicked')
                     if (task) {
                         taskText.classList.remove('hidden')
                         taskExpanded.classList.add('hidden')
@@ -602,12 +596,12 @@ if (token) {
                     taskText.classList.add('hidden')
                     taskExpanded.classList.remove('hidden')
                 } else if (!event.target.closest('.task-expanded-container')) {
-                    console.log(task)
-                    console.log('outside of task clicked', taskExpanded, taskText)
-                    taskExpanded.classList.add('hidden')
-                    taskText.classList.remove('hidden')
-                    task.setAttribute('draggable', true)
-                    task.classList.add('task-hover')
+                    if (task) {
+                        task.querySelector('.task-expanded-container').classList.add('hidden')
+                        task.querySelector('.task-text').classList.remove('hidden')
+                        task.setAttribute('draggable', true)
+                        task.classList.add('task-hover')
+                    }
                 } 
 
                 // task description
@@ -620,10 +614,12 @@ if (token) {
                     taskDesc.classList.add('hidden')
                     taskDescForm.classList.remove('hidden')
                 } else if (!event.target.classList.contains('task-description-input')) {
-                    taskDesc.classList.remove('hidden')
-                    taskDescForm.classList.add('hidden')
-                    taskDesc = null
-                    taskDescForm = null
+                    if (taskDesc) {
+                        taskDesc.classList.remove('hidden')
+                        taskDescForm.classList.add('hidden')
+                        taskDesc = null
+                        taskDescForm = null
+                    }
                 }
 
                 //submit description and update task ui
