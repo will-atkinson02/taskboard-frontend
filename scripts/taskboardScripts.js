@@ -1,3 +1,4 @@
+//check element positions
 function isBefore(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_FOLLOWING;
 }
@@ -6,6 +7,7 @@ function isAfter(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_PRECEDING;
 }
 
+//handle placeholder
 function createDropPlaceholder() {
     const placeholder = document.createElement("div")
     placeholder.classList.add('drop-placeholder-task')
@@ -21,45 +23,19 @@ function insertDropPlaceholder(target, position = 'before') {
     }
 }
 
-function removeTaskDropArea() {
-    document.querySelector('.drop-placeholder-task').remove()
-}
-
+//dragging events
 function allowDrop(event) {
     event.preventDefault()
 }
-
 function drag(event) {
     isDragging = true
     event.dataTransfer.setData("text", event.target.id)
 }
-
-function dropPutRequest(draggedTask, position) {
-    let data = {
-        "position": position,
-        "stage_id": parseInt(draggedTask.closest('.stage').id.slice(6))
-    }
-
-    let url = "http://127.0.0.1:8000/api/task/" + draggedTask.id
-
-    fetch(url, {
-        method: "PUT",
-        headers: HEADERS,
-        body: JSON.stringify(data)
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Response from server:", data)
-        })
-        .catch(error => console.error("Error:", error))
-}
-
 function taskDraggingEventListener(task) {
     task.addEventListener('dragstart', (event) => {
         elementId = event.target.id
         draggedTask = document.getElementById(elementId)
         isDragging = true
-        console.log('drag started')
     })
 
     task.addEventListener('drag', (event) => {
@@ -122,8 +98,7 @@ function taskDraggingEventListener(task) {
         }
     })
 }
-
-function onStageEnter(stage) {
+function onEnterStage(stage) {
     stage.addEventListener('dragenter', (event) => {
         if (!event.target.classList.contains('task')
             && !event.target.classList.contains('task-text')
@@ -146,6 +121,34 @@ function onStageEnter(stage) {
     })
 }
 
+//adding and changing tasks
+function dropPutRequest(draggedTask, position) {
+    let data = {
+        "position": position,
+        "stage_id": parseInt(draggedTask.closest('.stage').id.slice(6))
+    }  
+
+    let url = "http://127.0.0.1:8000/api/task/" + draggedTask.id
+
+    fetch(url, {
+        method: "PUT",
+        headers: HEADERS,
+        body: JSON.stringify(data)
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data)
+        })
+        .catch(error => console.error("Error:", error))
+}
+function applySendTaskDataEV() {
+    document.querySelectorAll('.task-name-submit').forEach(newTaskForm => {
+        // if (!newTaskForm.hasAttribute('listener-added')) {
+            newTaskForm.addEventListener('click', (event) => sendTaskDataRequest(event, newTaskForm))
+            // newTaskForm.setAttribute('listener-added', 'true')
+        // } 
+    })  
+}
 function sendTaskDataRequest(event, newTaskForm) {
     event.preventDefault()
 
@@ -183,31 +186,61 @@ function sendTaskDataRequest(event, newTaskForm) {
                     })
                 }
             })
+            applySendTaskDataEV()
             
-            document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-                taskSubmitButton.removeAttribute('task-added')
-            })
-            //displayNewTaskTemp()
+            // document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
+            //     taskSubmitButton.removeAttribute('temp-listener-added')
+            // })
         })
         .catch(error => console.error("Error:", error))
     }
 }
+function displayNewTaskTemp() {
+    document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
+            taskSubmitButton.addEventListener('click', () => {
+                const currentStage = taskSubmitButton.closest('.stage')
+                const inputValue = currentStage.querySelector('.task-name-input').value
+                const dropTarget = currentStage.querySelector('.drop-target')
+                const numberOfTasks = dropTarget.childElementCount
+                // if (inputValue) {
+                    currentStage.querySelector('.drop-target').innerHTML += `
+                        <div class='task task-hover' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
+                            <div class='task-text'>${inputValue}</div>
 
-function applySendTaskDataEV() {
-    document.querySelectorAll('.task-name-submit').forEach(newTaskForm => {
-        if (!newTaskForm.hasAttribute('listener-added')) {
-            newTaskForm.addEventListener('click', (event) => sendTaskDataRequest(event, newTaskForm))
-            newTaskForm.setAttribute('listener-added', 'true')
-        } 
-    })  
+                            <div class='hidden task-expanded-container'>
+                            <div class='expanded-task-text'>
+                                <div class='task-name'>${inputValue}</div>
+                                <input class='hidden task-name-input' type='text' value=''>
+                            </div>
+                            <div class='description-title'>Description:</div>
+                            <div class='task-description' maxlength="255">Click here to add a description...</div>
+                            <form class='hidden task-description-form'>
+                                <textarea class='task-description-input' type='text'  placeholder='Add a description...'></textarea>
+                                <button class='task-description-submit'>Add task</button>
+                                <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
+                            </form> 
+                            <div class='task-description-spacer'></div>
+                            <div class='colour-container'>
+                                <div class="colour-title">Colour: </div>
+                                <div class='task-colour'></div>
+                            </div>
+                        </div>`
+
+                    currentStage.querySelector('.add-task-container').classList.remove('hidden')
+                    currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
+                // }
+                currentStage.querySelector('.task-name-input').value = ''
+            })
+            // taskSubmitButton.setAttribute('temp-listener-added', 'true')
+    })
 }
 
+//delete stage
 function deleteStage() {
     document.querySelectorAll('.deleteStage').forEach(stageDeleteForm => {
         stageDeleteForm.addEventListener('click', (event) => {
             event.preventDefault()
             const stage = stageDeleteForm.closest('.stage')
-
             const stageId = parseInt(stage.id.slice(6))
 
             stage.remove()
@@ -225,51 +258,7 @@ function deleteStage() {
     })
 }
 
-function displayNewTaskTemp() {
-    document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-        if (!taskSubmitButton.hasAttribute('temp-listener-added')) {
-            taskSubmitButton.addEventListener('click', () => {
-                const currentStage = taskSubmitButton.closest('.stage')
-                const inputValue = currentStage.querySelector('.task-name-input').value
-                const dropTarget = currentStage.querySelector('.drop-target')
-                const numberOfTasks = dropTarget.childElementCount
-                if (inputValue) {
-                    currentStage.querySelector('.drop-target').innerHTML += `
-                    <div class="task-container">
-                        <div class='task' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
-                            <div class='task-text'>${inputValue}</div>
-                        </div>
-                        <div class='hidden task-expanded-container'>
-                            <div class='expanded-task-text'>
-                                <div class='task-name'>${inputValue}</div>
-                                <input class='hidden task-name-input' type='text' value=''>
-                            </div>
-                            
-                            <div class='description-title'>Description:</div>
-                            <div class='task-description' maxlength="255">Click here to add a description...</div>
-                            <form class='hidden task-description-form'>
-                                <textarea class='task-description-input' type='text'  placeholder='Add a description...'></textarea>
-                                <button class='task-description-submit'>Add task</button>
-                                <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
-                            </form> 
-                            <div class='task-description-spacer'></div>
-                            <div class='colour-container'>
-                                <div class="colour-title">Colour: </div>
-                                <div class='task-colour'></div>
-                            </div>
-                        </div>
-                    </div>`
-
-                    currentStage.querySelector('.add-task-container').classList.remove('hidden')
-                    currentStage.querySelector('.add-task-expanded-container').classList.add('hidden')
-                }
-            })
-            taskSubmitButton.setAttribute('temp-listener-added', 'true')
-        }
-        
-    })
-}
-
+//edit title
 function changeTitleRequest(taskboardId, token, jsonData) {
     let url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
 
@@ -285,13 +274,16 @@ function changeTitleRequest(taskboardId, token, jsonData) {
     .catch(error => console.error("Error:", error))
 }
 
+//loading spinner
 document.querySelector('body').innerHTML += `
     <div class="spinner-container">
         <div class="spinner"></div>
         </div>
     <div class="container-container"></div>`
 
+//token
 const token = sessionStorage.getItem('auth_token')
+//get url for uri
 const urlParams = new URLSearchParams(window.location.search)
 const taskboardId = urlParams.get('id')
 const taskboardUrl = 'http://127.0.0.1:8000/api/taskboard/' + taskboardId.toString()
@@ -299,12 +291,12 @@ const HEADERS = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${token}`
 }
-
 // initial states
 let draggedTask = null
 let isDragging = false
 
 if (token) {
+    //fetch saved taskboard
     fetch(taskboardUrl, {
         method: "GET",
         headers: HEADERS
@@ -340,8 +332,7 @@ if (token) {
                             <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </form>
-                </div>
-                `
+                </div>`
                 
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
@@ -355,32 +346,29 @@ if (token) {
                     }
 
                     document.getElementById("Stage " + stage.id).querySelector('.drop-target').innerHTML += `
-                    <div class="task-container">
-                        <div class='task' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
+                        <div class='task task-hover' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
                             <div class='task-text'>${task.name}</div>
                             ${descriptionIndicator}
-                        </div>
-                        <div class='hidden task-expanded-container'>
-                            <div class='expanded-task-text'>
-                                <div class='task-name'>${task.name}</div>
-                                <input class='hidden task-name-input' type='text' value=''>
-                            </div>
+                            <div class='hidden task-expanded-container'>
+                                <div class='expanded-task-text'>
+                                    <div class='task-name'>${task.name}</div>
+                                    <input class='hidden task-name-input' type='text' value=''>
+                                </div>
                             
-                            <div class='description-title'>Description:</div>
-                            <div class='task-description' maxlength="255">${description}</div>
-                            <form class='hidden task-description-form'>
-                                <textarea class='task-description-input' type='text'  placeholder='Add a description...'>${textareaDescription}</textarea>
-                                <button class='task-description-submit'>Add task</button>
-                                <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
-                            </form> 
-                            <div class='task-description-spacer'></div>
-                            <div class='colour-container'>
-                                <div class="colour-title">Colour: </div>
-                                <div class='task-colour'></div>
+                                <div class='description-title'>Description:</div>
+                                <div class='task-description' maxlength="255">${description}</div>
+                                <form class='hidden task-description-form'>
+                                    <textarea class='task-description-input' type='text'  placeholder='Add a description...'>${textareaDescription}</textarea>
+                                    <button class='task-description-submit'>Add task</button>
+                                    <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
+                                </form> 
+                                <div class='task-description-spacer'></div>
+                                <div class='colour-container'>
+                                    <div class="colour-title">Colour: </div>
+                                    <div class='task-colour'></div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    `
+                        </div>`
 
                     // if task has description or colour
                     // add icon plus colour
@@ -417,8 +405,6 @@ if (token) {
                 }
             })
 
-            
-
             // Tasks
             applySendTaskDataEV()
 
@@ -449,20 +435,20 @@ if (token) {
                                     stageName.closest('.stage').setAttribute('id', 'Stage ' + data.stageId)
                                     document.querySelector('.stage-name-input').value = ''
                                     document.querySelectorAll('.stage').forEach(stage => {
-                                        onStageEnter(stage)
+                                        onEnterStage(stage)
                                         deleteStage()
                                     })
                                 }
+                                applySendTaskDataEV()
+                                displayNewTaskTemp()
                             })
-                            applySendTaskDataEV()
-                            displayNewTaskTemp()
+                            
                             
                         })
                         .catch(error => console.error("Error:", error))
                 }
 
                 const inputValue = document.querySelector('.stage-name-input').value
-
                 if (inputValue) {
                     const newStage = document.querySelector('.new-stage-container')
                     const newStageHtml = `
@@ -486,7 +472,6 @@ if (token) {
                         `
 
                     newStage.insertAdjacentHTML('beforebegin', newStageHtml)
-
                     document.querySelector('.new-stage-container').classList.remove('hidden')
                     document.querySelector('.new-stage-expanded-container').classList.add('hidden')
                 }
@@ -495,8 +480,6 @@ if (token) {
             // Handle delete stage request
             deleteStage()
 
-            let isDragging = false
-
             // Add task dragging event listener to all tasks
             document.querySelectorAll('.task').forEach(task => {
                 taskDraggingEventListener(task)
@@ -504,7 +487,7 @@ if (token) {
 
             // Handle task placeholder transfer between stage
             document.querySelectorAll('.stage').forEach(stage => {
-                onStageEnter(stage)
+                onEnterStage(stage)
             })
 
             const newStage = document.querySelector('.new-stage-container')
@@ -577,87 +560,13 @@ if (token) {
                 })
             })
 
-
             // Handle all clicks
             let task = null
+            let taskText = null
             let taskExpanded = null
             let taskDesc = null
             let taskDescForm = null
             window.addEventListener("click", (event) => {
-                // task expand
-                if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
-                    if (task) {
-                        task.classList.remove('hidden')
-                        taskExpanded.classList.add('hidden')
-                    }
-                    task = event.target.closest('.task')
-                    taskExpanded = task.nextElementSibling
-                    taskExpanded.classList.remove('hidden')
-                } else if (taskExpanded && !taskDesc) {
-                    if (!event.target.closest('.task-expanded-container')) {
-                        taskExpanded.classList.add('hidden')
-                    }
-                } 
-
-                // task description
-                if (event.target.classList.contains('task-description')) {
-                    taskDesc = event.target
-                    taskDescForm = event.target.closest('.task-expanded-container').querySelector('.task-description-form')
-                    if (taskDesc.textContent != 'Click here to add a description...') {
-                        taskDescForm.querySelector('.task-description-input').textContent = taskDesc.textContent
-                    }
-                    taskDesc.classList.add('hidden')
-                    taskDescForm.classList.remove('hidden')
-                } else if (taskDesc) {
-                    if (!event.target.classList.contains('task-description-input')) {
-                        taskDesc.classList.remove('hidden')
-                        taskDescForm.classList.add('hidden')
-                        taskDesc = null
-                    }
-                }
-
-                if (event.target.classList.contains('task-description-submit')) {
-                    event.preventDefault()
-
-                    const task = event.target.closest('.task-container').querySelector('.task')
-                    const descriptionInput = event.target.previousSibling.previousSibling.value.trim()
-                    const descriptionElement = task.closest('.task-container').querySelector('.task-description') 
-                    const data = {
-                        "description": descriptionInput
-                    }
-
-                    if (descriptionElement.textContent === 'Click here to add a description...' && descriptionInput != '') {
-                        task.innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
-                    }
-                    
-                    if (descriptionInput != '') {
-                        descriptionElement.textContent = descriptionInput
-                    } else {
-                        descriptionElement.textContent = 'Click here to add a description...'
-                        task.querySelector('.description-indicator').remove() 
-                    }
-
-                    const url = "http://127.0.0.1:8000/api/task/" + task.id
-                    fetch(url, {
-                        method: "PUT",
-                        headers: HEADERS,
-                        body: JSON.stringify(data)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Response from server:", data)
-                        })
-                        .catch(error => console.error("Error:", error))
-                    
-                }
-
-                // more options
-                if (event.target.classList.contains('more-options')) {
-                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
-                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
-                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
-                }
-                
                 // title functionality
                 if (event.target.classList.contains('title')) {
                     title.classList.add('hidden')
@@ -676,22 +585,88 @@ if (token) {
                     titleBox.classList.add('hidden')
                 }
 
-                // new stage
-                const newStageClicked = event.target.closest('.new-stage-container')
-                const newStageExpandedClicked = event.target.closest('.new-stage-expanded-container')
-                if (newStageClicked) {
-                    newStage.classList.add('hidden')
-                    newStageExpanded.classList.remove('hidden')
-                } else if (!newStageExpandedClicked || event.target === document.querySelector('.close-stage-input')) {
-                    newStage.classList.remove('hidden')
-                    newStageExpanded.classList.add('hidden')
+                // task expand
+                if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
+                    console.log('task clicked')
+                    if (task) {
+                        taskText.classList.remove('hidden')
+                        taskExpanded.classList.add('hidden')
+                        task.classList.add('task-hover')
+                    }
+                    task = event.target.closest('.task')
+                    task.setAttribute('draggable', false)
+                    task.classList.remove('task-hover')
+                    //child nodes
+                    taskText = task.querySelector('.task-text')
+                    taskExpanded = task.querySelector('.task-expanded-container')
+                    taskText.classList.add('hidden')
+                    taskExpanded.classList.remove('hidden')
+                } else if (!event.target.closest('.task-expanded-container')) {
+                    console.log(task)
+                    console.log('outside of task clicked', taskExpanded, taskText)
+                    taskExpanded.classList.add('hidden')
+                    taskText.classList.remove('hidden')
+                    task.setAttribute('draggable', true)
+                    task.classList.add('task-hover')
+                } 
+
+                // task description
+                if (event.target.classList.contains('task-description')) {
+                    taskDesc = event.target
+                    taskDescForm = event.target.closest('.task-expanded-container').querySelector('.task-description-form')
+                    if (taskDesc.textContent != 'Click here to add a description...') {
+                        taskDescForm.querySelector('.task-description-input').textContent = taskDesc.textContent
+                    }
+                    taskDesc.classList.add('hidden')
+                    taskDescForm.classList.remove('hidden')
+                } else if (!event.target.classList.contains('task-description-input')) {
+                    taskDesc.classList.remove('hidden')
+                    taskDescForm.classList.add('hidden')
+                    taskDesc = null
+                    taskDescForm = null
+                }
+
+                //submit description and update task ui
+                if (event.target.classList.contains('task-description-submit')) {
+                    event.preventDefault()
+
+                    const descriptionInput = event.target.previousSibling.previousSibling.value.trim()
+                    const descriptionElement = task.querySelector('.task-description')
+                    const descriptionIndicator = task.querySelector('.description-indicator')
+                    const data = {
+                        "description": descriptionInput
+                    }
+
+                    if (descriptionInput != '') {
+                        descriptionElement.textContent = descriptionInput
+                        if (!descriptionIndicator) {
+                            task.innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
+                        }
+                    } else {
+                        descriptionElement.textContent = 'Click here to add a description...'
+                        if (descriptionIndicator) {
+                            task.querySelector('.description-indicator').remove() 
+                        }
+                    }
+
+                    const url = "http://127.0.0.1:8000/api/task/" + task.id
+                    fetch(url, {
+                        method: "PUT",
+                        headers: HEADERS,
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Response from server:", data)
+                    })
+                    .catch(error => console.error("Error:", error))
+                    
                 }
 
                 // add tasks
                 const inAddTaskExpanded = event.target.closest('.add-task-expanded-container')
                 if (event.target.classList.contains('add-task-container')) {
                     const stageClosest = event.target.closest('.stage')
-
                     const newTask = stageClosest.querySelector('.add-task-container')
                     const newTaskExpanded = stageClosest.querySelector('.add-task-expanded-container')
 
@@ -710,6 +685,24 @@ if (token) {
                         stage.querySelector('.add-task-container').classList.remove('hidden')
                         stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                     })
+                }
+
+                // more options on stage
+                if (event.target.classList.contains('more-options')) {
+                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
+                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
+                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
+                }
+
+                // new stage
+                const newStageClicked = event.target.closest('.new-stage-container')
+                const newStageExpandedClicked = event.target.closest('.new-stage-expanded-container')
+                if (newStageClicked) {
+                    newStage.classList.add('hidden')
+                    newStageExpanded.classList.remove('hidden')
+                } else if (!newStageExpandedClicked || event.target === document.querySelector('.close-stage-input')) {
+                    newStage.classList.remove('hidden')
+                    newStageExpanded.classList.add('hidden')
                 }
             })
         }).catch(error => console.error('Error:', error))

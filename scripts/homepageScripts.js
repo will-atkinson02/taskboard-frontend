@@ -14,9 +14,7 @@ function createNewTaskboardRequest(token, userJson) {
     .catch(error => console.error("Error:", error))
 }
 
-let token = sessionStorage.getItem('auth_token')
-
-console.log(token)
+const token = sessionStorage.getItem('auth_token')
 
 if (!token) {
     document.querySelector('body').innerHTML += `
