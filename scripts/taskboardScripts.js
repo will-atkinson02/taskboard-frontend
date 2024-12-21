@@ -8,14 +8,15 @@ function isAfter(element1, element2) {
 }
 
 //handle placeholder
-function createDropPlaceholder() {
+function createDropPlaceholder(draggedTaskHeight) {
     const placeholder = document.createElement("div")
     placeholder.classList.add('drop-placeholder-task')
+    placeholder.style.height = `${draggedTaskHeight}px`
     return placeholder
 }
 
-function insertDropPlaceholder(target, position = 'before') {
-    const placeholder = createDropPlaceholder()
+function insertDropPlaceholder(target, draggedTaskHeight, position = 'before') {
+    const placeholder = createDropPlaceholder(draggedTaskHeight)
     if (position === 'after') {
         target.insertAdjacentElement('beforebegin', placeholder)
     } else {
@@ -35,14 +36,16 @@ function taskDraggingEventListener(task) {
     task.addEventListener('dragstart', (event) => {
         originalStageId = event.target.closest('.stage').id
         elementId = event.target.id
-        draggedTask = document.getElementById(elementId)
+        draggedTask = event.target
+        draggedTaskHeight = draggedTask.clientHeight
+        console.log(draggedTaskHeight)
         isDragging = true
     })
 
     task.addEventListener('drag', (event) => {
         if (draggedTask) {
             if (event.target.id === elementId) {
-                insertDropPlaceholder(draggedTask)
+                insertDropPlaceholder(draggedTask, draggedTaskHeight)
                 draggedTask.remove()
             }
         }
@@ -113,9 +116,11 @@ function onEnterStage(stage) {
                 if (document.getElementById(elementId)) {
                     document.getElementById(elementId).remove()
                 }
+                console.log(draggedTask)
 
-                const placeholder = createDropPlaceholder()
+                const placeholder = createDropPlaceholder(draggedTaskHeight)
                 const dropTarget = stage.querySelector('.drop-target')
+                console.log(placeholder)
                 dropTarget.appendChild(placeholder)
             }
         }
@@ -255,6 +260,7 @@ const HEADERS = {
 }
 // initial states
 let draggedTask = null
+let draggedTaskHeight = null
 let originalStageId = null
 let isDragging = false
 
@@ -313,7 +319,9 @@ if (token) {
                     stageElement.querySelector('.drop-target').innerHTML += `
                         <div class='task task-hover' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
                             <div class='task-text'>${task.name}</div>
-                            ${descriptionIndicator}
+                            <div class='indicators'>
+                                ${descriptionIndicator}
+                            </div>
                             <div class='hidden task-expanded-container'>
                                 <div class='expanded-task-text'>
                                     <div class='task-name'>${task.name}</div>
@@ -330,13 +338,27 @@ if (token) {
                                 <div class='task-description-spacer'></div>
                                 <div class='colour-container'>
                                     <div class="colour-title">Colour: </div>
-                                    <div class='task-colour'></div>
+                                    <div class='task-colour-container'>
+                                        <div class='task-colour'></div>
+                                        <div class='hidden task-colour-list'>
+                                            <div class='task-colour-select red'></div>
+                                            <div class='task-colour-select orange'></div>
+                                            <div class='task-colour-select yellow'></div>
+                                            <div class='task-colour-select green'></div>
+                                            <div class='task-colour-select blue'></div>
+                                            <div class='task-colour-select purple'></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>`
 
-                    // if task has description or colour
-                    // add icon plus colour
+                    if (task.colour) {
+                        stageElement.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
+                        stageElement.querySelector('.' + task.colour).classList.add('darken')
+                        stageElement.querySelector('.task-colour').classList.add(task.colour)
+                        stageElement.querySelector('.indicators').innerHTML += `<div class='colour-indicator ${task.colour}'></div>`
+                    }
                 })
             })
 
@@ -447,6 +469,7 @@ if (token) {
                 placeholder.insertAdjacentElement('afterend', draggedTask)
                 placeholder.remove()
                 isDragging = false
+                draggedTaskHeight = null
                 if (event.target.closest('.stage') || placeholder) {
                     const dropTarget = stage.querySelector('.drop-target')
                     const dropTargetArray = Array.from(dropTarget.children)
@@ -494,6 +517,7 @@ if (token) {
             let taskExpanded = null
             let taskDesc = null
             let taskDescForm = null
+            let taskColourList = null
             window.addEventListener("click", (event) => {
                 // title functionality
                 if (event.target.classList.contains('title')) {
@@ -525,9 +549,8 @@ if (token) {
                 }
 
                 // task expand
-                if (event.target.classList.contains('task') || event.target.classList.contains('task-text')) {
+                if (event.target.classList.contains('task') || event.target.classList.contains('task-text') || event.target.closest('.indicators')) {
                     if (task) {
-                        taskText.classList.remove('hidden')
                         taskExpanded.classList.add('hidden')
                         task.classList.add('task-hover')
                     }
@@ -535,14 +558,11 @@ if (token) {
                     task.setAttribute('draggable', false)
                     task.classList.remove('task-hover')
                     //child nodes
-                    taskText = task.querySelector('.task-text')
                     taskExpanded = task.querySelector('.task-expanded-container')
-                    taskText.classList.add('hidden')
                     taskExpanded.classList.remove('hidden')
-                } else if (!event.target.closest('.task-expanded-container')) {
+                } else if (!event.target.closest('.task-expanded-container') && !taskColourList && !taskDesc) {
                     if (task) {
                         task.querySelector('.task-expanded-container').classList.add('hidden')
-                        task.querySelector('.task-text').classList.remove('hidden')
                         task.setAttribute('draggable', true)
                         task.classList.add('task-hover')
                     }
@@ -576,31 +596,79 @@ if (token) {
                     const data = {
                         "description": descriptionInput
                     }
+                    if (!(descriptionElement.textContent === 'Click here to add a description...' && descriptionInput === '') && !isDragging) {
+                        if (descriptionInput != '') {
+                            descriptionElement.textContent = descriptionInput
+                            if (!descriptionIndicator) {
+                                descriptionElement.closest('.task').querySelector('.indicators').innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
+                            }
+                        } else {
+                            descriptionElement.textContent = 'Click here to add a description...'
+                            if (descriptionIndicator) {
+                                task.querySelector('.description-indicator').remove() 
+                            }
+                        }
+                        const url = "http://127.0.0.1:8000/api/task/" + task.id
+                        fetch(url, {
+                            method: "PUT",
+                            headers: HEADERS,
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data)
+                        })
+                        .catch(error => console.error("Error:", error))
+                    } 
+                }
 
-                    if (descriptionInput != '') {
-                        descriptionElement.textContent = descriptionInput
-                        if (!descriptionIndicator) {
-                            task.innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
+                // task colour
+                if (event.target.classList.contains('task-colour-container') || event.target.classList.contains('task-colour')) {
+                    // colour list show
+                    taskColourList = event.target.closest('.task-colour-container').querySelector('.task-colour-list')
+                    taskColourList.classList.remove('hidden')
+                } else if (taskColourList && !event.target.classList.contains('task-colour-list') && !event.target.closest('.darken')) {
+                    // hide colour list
+                    if (event.target.classList.contains('task-colour-select')) {
+                        const task = event.target.closest('.task')
+                        const taskColourElement = event.target.closest('.task-colour-container').querySelector('.task-colour')
+                        const originalColour = taskColourElement.className.slice(12)
+                        const newColour = event.target.className.slice(19)
+                        if (originalColour.trim() != '') {
+                            taskColourList.querySelector('.' + originalColour).classList.remove('darken')
+                            taskColourList.querySelector('.check').remove()
                         }
-                    } else {
-                        descriptionElement.textContent = 'Click here to add a description...'
-                        if (descriptionIndicator) {
-                            task.querySelector('.description-indicator').remove() 
+                        taskColourList.querySelector('.' + newColour).classList.add('darken')
+                        taskColourList.querySelector('.' + newColour).innerHTML += `<i class="check fa-solid fa-check"></i>`
+                        taskColourElement.className = taskColourElement.className.slice(0, 11) + ' ' + newColour
+                        if (!task.querySelector('.colour-indicator')) {
+                            task.querySelector('.indicators').innerHTML += `<div class='colour-indicator'></div>`
+                        } else {
+                            task.querySelector('.colour-indicator').classList.remove(originalColour)
                         }
+                        task.querySelector('.colour-indicator').classList.add(newColour)
+
+                        const data = {
+                            "colour": newColour,
+                        }  
+                        
+                        const url = "http://127.0.0.1:8000/api/task/" + task.id
+
+                        console.log(url, data)
+                        fetch(url, {
+                            method: "PUT",
+                            headers: HEADERS,
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data)
+                        })
+                        .catch(error => console.error("Error:", error))
+                        
                     }
-
-                    const url = "http://127.0.0.1:8000/api/task/" + task.id
-                    fetch(url, {
-                        method: "PUT",
-                        headers: HEADERS,
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Response from server:", data)
-                    })
-                    .catch(error => console.error("Error:", error))
-                    
+                    taskColourList.classList.add('hidden')
+                    taskColourList = null
                 }
 
                 // expand/contract add tasks
