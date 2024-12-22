@@ -38,8 +38,10 @@ function taskDraggingEventListener(task) {
         elementId = event.target.id
         draggedTask = event.target
         draggedTaskHeight = draggedTask.clientHeight
-        console.log(draggedTaskHeight)
         isDragging = true
+
+        const rect = draggedTask.getBoundingClientRect()
+        console.log(rect.top)
     })
 
     task.addEventListener('drag', (event) => {
@@ -49,56 +51,69 @@ function taskDraggingEventListener(task) {
                 draggedTask.remove()
             }
         }
+        
+    })
+
+    task.addEventListener('dragover', (event) => {
+        const taskDimensions = task.getBoundingClientRect()
+        // console.log(taskDimensions.top, taskDimensions.bottom, taskDimensions.right, taskDimensions.left)
+        // console.log(taskDimensions.top, event.clientY)
+        if (event.clientY > taskDimensions.top && event.clientY < taskDimensions.top + draggedTaskHeight) {
+            console.log('a', event.clientX, event.clientY)
+        } else if (event.clientY < taskDimensions.bottom && event.clientY > taskDimensions.bottom - draggedTaskHeight) {
+            console.log('b', event.clientX, event.clientY)
+        }
     })
 
     task.addEventListener('dragenter', (event) => {
         if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) {
-            let taskBelow = event.target
-            let draggedTask = document.getElementById(elementId)
+            taskBelow = event.target.closest('.task')
+            
+            // if (draggedTaskHeight < taskBelow.clientHeight) {
+            //     console.log(event.clientX, event.clientY)
+            //     const cursorX = e.clientX;
+            //     const cursorY = e.clientY;
+            // }
 
-            if (event.target.classList.contains('task-text')) {
-                taskBelow = event.target.closest('.task')
-            }
-
-            if (!document.querySelector('.drop-placeholder-task')) {
-                if (!draggedTask.closest('.stage').contains(taskBelow)) {
-                    insertDropPlaceholder(taskBelow)
-                } else {
-                    if (isBefore(draggedTask, taskBelow)) {
-                        if (draggedTask.nextSibling === taskBelow) {
-                            taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
-                            insertDropPlaceholder(draggedTask)
-                            draggedTask.remove()
-                        } else {
-                            insertDropPlaceholder(taskBelow, 'after')
-                            draggedTask.remove()
-                        }
-                    } else if (isAfter(draggedTask, taskBelow)) {
-                        if (draggedTask.previousSibling === taskBelow) {
-                            insertDropPlaceholder(taskBelow)
-                            draggedTask.remove()
-                        } else {
-                            insertDropPlaceholder(taskBelow)
-                            draggedTask.remove()
-                        }
-                    }
-                }
-            } else {
-                let placeholderTask = document.querySelector('.drop-placeholder-task')
-                if (isBefore(placeholderTask, taskBelow)) {
-                    if (placeholderTask.nextSibling === taskBelow) {
-                        taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-                    } else {
-                        taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-                    }
-                } else if (isAfter(placeholderTask, taskBelow)) {
-                    if (placeholderTask.previousSibling === taskBelow) {
-                        placeholderTask.insertAdjacentElement('afterend', taskBelow)
-                    } else {
-                        placeholderTask.insertAdjacentElement('afterend', taskBelow)
-                    }
-                }
-            }
+            // if (!document.querySelector('.drop-placeholder-task')) {
+            //     if (!draggedTask.closest('.stage').contains(taskBelow)) {
+            //         insertDropPlaceholder(taskBelow)
+            //     } else {
+            //         if (isBefore(draggedTask, taskBelow)) {
+            //             if (draggedTask.nextSibling === taskBelow) {
+            //                 taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
+            //                 insertDropPlaceholder(draggedTask)
+            //                 draggedTask.remove()
+            //             } else {
+            //                 insertDropPlaceholder(taskBelow, 'after')
+            //                 draggedTask.remove()
+            //             }
+            //         } else if (isAfter(draggedTask, taskBelow)) {
+            //             if (draggedTask.previousSibling === taskBelow) {
+            //                 insertDropPlaceholder(taskBelow)
+            //                 draggedTask.remove()
+            //             } else {
+            //                 insertDropPlaceholder(taskBelow)
+            //                 draggedTask.remove()
+            //             }
+            //         }
+            //     }
+            // } else {
+            //     let placeholderTask = document.querySelector('.drop-placeholder-task')
+            //     if (isBefore(placeholderTask, taskBelow)) {
+            //         if (placeholderTask.nextSibling === taskBelow) {
+            //             taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
+            //         } else {
+            //             taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
+            //         }
+            //     } else if (isAfter(placeholderTask, taskBelow)) {
+            //         if (placeholderTask.previousSibling === taskBelow) {
+            //             placeholderTask.insertAdjacentElement('afterend', taskBelow)
+            //         } else {
+            //             placeholderTask.insertAdjacentElement('afterend', taskBelow)
+            //         }
+            //     }
+            // }
         }
     })
 }
@@ -116,11 +131,9 @@ function onEnterStage(stage) {
                 if (document.getElementById(elementId)) {
                     document.getElementById(elementId).remove()
                 }
-                console.log(draggedTask)
 
                 const placeholder = createDropPlaceholder(draggedTaskHeight)
                 const dropTarget = stage.querySelector('.drop-target')
-                console.log(placeholder)
                 dropTarget.appendChild(placeholder)
             }
         }
@@ -173,9 +186,6 @@ function sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks) {
                     })
                 }
             })
-            // document.querySelectorAll('.task-name-submit').forEach(taskSubmitButton => {
-            //     taskSubmitButton.removeAttribute('temp-listener-added')
-            // })
         })
         .catch(error => console.error("Error:", error))
     }
@@ -205,11 +215,8 @@ function displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks) {
         </div>`
     stage.querySelector('.add-task-container').classList.remove('hidden')
     stage.querySelector('.add-task-expanded-container').classList.add('hidden')
-    // taskNameInput.value = ''
-    // taskSubmitButton.setAttribute('temp-listener-added', 'true')
+    
 }
-// function changeInputValue(value):
-//     inputElement.value = 
 
 //delete stage
 function deleteStage(stage) {
@@ -261,6 +268,8 @@ const HEADERS = {
 // initial states
 let draggedTask = null
 let draggedTaskHeight = null
+let draggedTaskDimensions = null
+let taskBelow = null
 let originalStageId = null
 let isDragging = false
 
@@ -654,7 +663,6 @@ if (token) {
                         
                         const url = "http://127.0.0.1:8000/api/task/" + task.id
 
-                        console.log(url, data)
                         fetch(url, {
                             method: "PUT",
                             headers: HEADERS,
