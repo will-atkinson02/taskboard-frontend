@@ -56,64 +56,52 @@ function taskDraggingEventListener(task) {
 
     task.addEventListener('dragover', (event) => {
         const taskDimensions = task.getBoundingClientRect()
-        // console.log(taskDimensions.top, taskDimensions.bottom, taskDimensions.right, taskDimensions.left)
-        // console.log(taskDimensions.top, event.clientY)
-        if (event.clientY > taskDimensions.top && event.clientY < taskDimensions.top + draggedTaskHeight) {
-            console.log('a', event.clientX, event.clientY)
-        } else if (event.clientY < taskDimensions.bottom && event.clientY > taskDimensions.bottom - draggedTaskHeight) {
-            console.log('b', event.clientX, event.clientY)
-        }
+        if (draggedTaskHeight < taskBelow.clientHeight) {
+            if (event.clientY > taskDimensions.top && event.clientY < (taskDimensions.top + draggedTaskHeight)) {
+                allowA = true
+            } else if (event.clientY < taskDimensions.bottom && event.clientY > taskDimensions.bottom - draggedTaskHeight) {
+                console.log('c')
+                allowB = true
+            }
+        } 
     })
 
     task.addEventListener('dragenter', (event) => {
         if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) {
             taskBelow = event.target.closest('.task')
-            
-            // if (draggedTaskHeight < taskBelow.clientHeight) {
-            //     console.log(event.clientX, event.clientY)
-            //     const cursorX = e.clientX;
-            //     const cursorY = e.clientY;
-            // }
-
-            // if (!document.querySelector('.drop-placeholder-task')) {
-            //     if (!draggedTask.closest('.stage').contains(taskBelow)) {
-            //         insertDropPlaceholder(taskBelow)
-            //     } else {
-            //         if (isBefore(draggedTask, taskBelow)) {
-            //             if (draggedTask.nextSibling === taskBelow) {
-            //                 taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
-            //                 insertDropPlaceholder(draggedTask)
-            //                 draggedTask.remove()
-            //             } else {
-            //                 insertDropPlaceholder(taskBelow, 'after')
-            //                 draggedTask.remove()
-            //             }
-            //         } else if (isAfter(draggedTask, taskBelow)) {
-            //             if (draggedTask.previousSibling === taskBelow) {
-            //                 insertDropPlaceholder(taskBelow)
-            //                 draggedTask.remove()
-            //             } else {
-            //                 insertDropPlaceholder(taskBelow)
-            //                 draggedTask.remove()
-            //             }
-            //         }
-            //     }
-            // } else {
-            //     let placeholderTask = document.querySelector('.drop-placeholder-task')
-            //     if (isBefore(placeholderTask, taskBelow)) {
-            //         if (placeholderTask.nextSibling === taskBelow) {
-            //             taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-            //         } else {
-            //             taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-            //         }
-            //     } else if (isAfter(placeholderTask, taskBelow)) {
-            //         if (placeholderTask.previousSibling === taskBelow) {
-            //             placeholderTask.insertAdjacentElement('afterend', taskBelow)
-            //         } else {
-            //             placeholderTask.insertAdjacentElement('afterend', taskBelow)
-            //         }
-            //     }
-            // }
+            if (!document.querySelector('.drop-placeholder-task')) {
+                // if (!draggedTask.closest('.stage').contains(taskBelow)) {
+                //     insertDropPlaceholder(taskBelow)
+                // } else {
+                //     if (isBefore(draggedTask, taskBelow)) {
+                //         if (draggedTask.nextSibling === taskBelow) {
+                //             taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
+                //             insertDropPlaceholder(draggedTask)
+                //             draggedTask.remove()
+                //         } else {
+                //             insertDropPlaceholder(taskBelow, 'after')
+                //             draggedTask.remove()
+                //         }
+                //     } else if (isAfter(draggedTask, taskBelow)) {
+                //         if (draggedTask.previousSibling === taskBelow) {
+                //             insertDropPlaceholder(taskBelow)
+                //             draggedTask.remove()
+                //         } else {
+                //             insertDropPlaceholder(taskBelow)
+                //             draggedTask.remove()
+                //         }
+                //     }
+                // }
+            } else {
+                let placeholderTask = document.querySelector('.drop-placeholder-task')
+                if (isBefore(placeholderTask, taskBelow) && allowB) {
+                    taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
+                    allowB = false 
+                } else if (isAfter(placeholderTask, taskBelow) && allowA) {
+                    placeholderTask.insertAdjacentElement('afterend', taskBelow)
+                    allowA = false
+                }
+            }
         }
     })
 }
@@ -131,7 +119,7 @@ function onEnterStage(stage) {
                 if (document.getElementById(elementId)) {
                     document.getElementById(elementId).remove()
                 }
-
+                console.log('f')
                 const placeholder = createDropPlaceholder(draggedTaskHeight)
                 const dropTarget = stage.querySelector('.drop-target')
                 dropTarget.appendChild(placeholder)
@@ -272,6 +260,8 @@ let draggedTaskDimensions = null
 let taskBelow = null
 let originalStageId = null
 let isDragging = false
+let allowA = false
+let allowB = false
 
 if (token) {
     //fetch saved taskboard
