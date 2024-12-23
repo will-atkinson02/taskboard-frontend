@@ -39,9 +39,6 @@ function taskDraggingEventListener(task) {
         draggedTask = event.target
         draggedTaskHeight = draggedTask.clientHeight
         isDragging = true
-
-        const rect = draggedTask.getBoundingClientRect()
-        console.log(rect.top)
     })
 
     task.addEventListener('drag', (event) => {
@@ -57,13 +54,27 @@ function taskDraggingEventListener(task) {
     task.addEventListener('dragover', (event) => {
         const taskDimensions = task.getBoundingClientRect()
         if (draggedTaskHeight < taskBelow.clientHeight) {
-            if (event.clientY > taskDimensions.top && event.clientY < (taskDimensions.top + draggedTaskHeight)) {
+            const heightDifference = taskBelow.clientHeight - draggedTaskHeight
+            console.log(heightDifference)
+            if (event.clientY > taskDimensions.top + heightDifference && event.clientY < taskDimensions.bottom) {
+                console.log('a')
                 allowA = true
-            } else if (event.clientY < taskDimensions.bottom && event.clientY > taskDimensions.bottom - draggedTaskHeight) {
+            } else {
                 console.log('c')
-                allowB = true
+                allowA = false
             }
-        } 
+            
+            if (event.clientY < taskDimensions.bottom - heightDifference && event.clientY > taskDimensions.top) {
+                console.log('b')
+                allowB = true
+            } else {
+                console.log('d')
+                allowB = false
+            }
+        } else {
+            allowA = true
+            allowB = true
+        }
     })
 
     task.addEventListener('dragenter', (event) => {
@@ -94,12 +105,14 @@ function taskDraggingEventListener(task) {
                 // }
             } else {
                 let placeholderTask = document.querySelector('.drop-placeholder-task')
-                if (isBefore(placeholderTask, taskBelow) && allowB) {
+                if (isBefore(placeholderTask, taskBelow) && allowA) {
                     taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-                    allowB = false 
-                } else if (isAfter(placeholderTask, taskBelow) && allowA) {
+                    allowA = false
+                    allowB = false
+                } else if (isAfter(placeholderTask, taskBelow) && allowB) {
                     placeholderTask.insertAdjacentElement('afterend', taskBelow)
                     allowA = false
+                    allowB = false
                 }
             }
         }
@@ -119,7 +132,6 @@ function onEnterStage(stage) {
                 if (document.getElementById(elementId)) {
                     document.getElementById(elementId).remove()
                 }
-                console.log('f')
                 const placeholder = createDropPlaceholder(draggedTaskHeight)
                 const dropTarget = stage.querySelector('.drop-target')
                 dropTarget.appendChild(placeholder)
@@ -262,6 +274,7 @@ let originalStageId = null
 let isDragging = false
 let allowA = false
 let allowB = false
+
 
 if (token) {
     //fetch saved taskboard
