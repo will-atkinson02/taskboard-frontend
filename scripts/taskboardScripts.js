@@ -2,7 +2,6 @@
 function isBefore(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_FOLLOWING;
 }
-
 function isAfter(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_PRECEDING;
 }
@@ -14,7 +13,6 @@ function createDropPlaceholder(draggedTaskHeight) {
     placeholder.style.height = `${draggedTaskHeight}px`
     return placeholder
 }
-
 function insertDropPlaceholder(target, draggedTaskHeight, position = 'before') {
     const placeholder = createDropPlaceholder(draggedTaskHeight)
     if (position === 'after') {
@@ -48,71 +46,34 @@ function taskDraggingEventListener(task) {
                 draggedTask.remove()
             }
         }
-        
-    })
-
-    task.addEventListener('dragover', (event) => {
-        const taskDimensions = task.getBoundingClientRect()
-        if (draggedTaskHeight < taskBelow.clientHeight) {
-            const heightDifference = taskBelow.clientHeight - draggedTaskHeight
-            console.log(heightDifference)
-            if (event.clientY > taskDimensions.top + heightDifference && event.clientY < taskDimensions.bottom) {
-                console.log('a')
-                allowA = true
-            } else {
-                console.log('c')
-                allowA = false
-            }
-            
-            if (event.clientY < taskDimensions.bottom - heightDifference && event.clientY > taskDimensions.top) {
-                console.log('b')
-                allowB = true
-            } else {
-                console.log('d')
-                allowB = false
-            }
-        } else {
-            allowA = true
-            allowB = true
-        }
     })
 
     task.addEventListener('dragenter', (event) => {
         if (event.target.id !== elementId && event.target.closest('.task').id !== elementId) {
             taskBelow = event.target.closest('.task')
-            if (!document.querySelector('.drop-placeholder-task')) {
-                // if (!draggedTask.closest('.stage').contains(taskBelow)) {
-                //     insertDropPlaceholder(taskBelow)
-                // } else {
-                //     if (isBefore(draggedTask, taskBelow)) {
-                //         if (draggedTask.nextSibling === taskBelow) {
-                //             taskBelow.closest('.drop-target').insertBefore(taskBelow, draggedTask)
-                //             insertDropPlaceholder(draggedTask)
-                //             draggedTask.remove()
-                //         } else {
-                //             insertDropPlaceholder(taskBelow, 'after')
-                //             draggedTask.remove()
-                //         }
-                //     } else if (isAfter(draggedTask, taskBelow)) {
-                //         if (draggedTask.previousSibling === taskBelow) {
-                //             insertDropPlaceholder(taskBelow)
-                //             draggedTask.remove()
-                //         } else {
-                //             insertDropPlaceholder(taskBelow)
-                //             draggedTask.remove()
-                //         }
-                //     }
-                // }
+        }
+    })
+
+    task.addEventListener('dragover', (event) => {
+        if (taskBelow) {
+            const taskDimensions = task.getBoundingClientRect()
+            const placeholderTask = document.querySelector('.drop-placeholder-task')
+            const heightDifference = taskBelow.clientHeight - draggedTaskHeight - 5
+            if (draggedTaskHeight < taskBelow.clientHeight) {
+                if (isBefore(placeholderTask, taskBelow)) {
+                    if (event.clientY > taskDimensions.top + heightDifference && event.clientY < taskDimensions.bottom) {
+                        taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
+                    }
+                } else if (isAfter(placeholderTask, taskBelow)) {
+                    if (event.clientY < taskDimensions.bottom - heightDifference && event.clientY > taskDimensions.top) {
+                        placeholderTask.insertAdjacentElement('afterend', taskBelow)
+                    }
+                }
             } else {
-                let placeholderTask = document.querySelector('.drop-placeholder-task')
-                if (isBefore(placeholderTask, taskBelow) && allowA) {
+                if (isBefore(placeholderTask, taskBelow)) {
                     taskBelow.closest('.drop-target').insertBefore(taskBelow, placeholderTask)
-                    allowA = false
-                    allowB = false
-                } else if (isAfter(placeholderTask, taskBelow) && allowB) {
+                } else if (isAfter(placeholderTask, taskBelow)) {
                     placeholderTask.insertAdjacentElement('afterend', taskBelow)
-                    allowA = false
-                    allowB = false
                 }
             }
         }
@@ -141,13 +102,8 @@ function onEnterStage(stage) {
 }
 
 //adding and changing tasks
-function dropPutRequest(draggedTask, position) {
-    let data = {
-        "position": position,
-        "stage_id": parseInt(draggedTask.closest('.stage').id.slice(6))
-    }  
-
-    let url = "http://127.0.0.1:8000/api/task/" + draggedTask.id
+function updateTask(task, data) {
+    let url = "http://127.0.0.1:8000/api/task/" + task.id
     fetch(url, {
         method: "PUT",
         headers: HEADERS,
@@ -194,11 +150,10 @@ function displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks) {
     stage.querySelector('.drop-target').innerHTML += `
         <div class='task task-hover' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
             <div class='task-text'>${taskNameInput.value}</div>
-
             <div class='hidden task-expanded-container'>
             <div class='expanded-task-text'>
                 <div class='task-name'>${taskNameInput.value}</div>
-                <input class='hidden task-name-reinput' type='text'>
+                <textarea class='hidden rename-task'></textarea>
             </div>
             <div class='description-title'>Description:</div>
             <div class='task-description' maxlength="255">Click here to add a description...</div>
@@ -218,7 +173,22 @@ function displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks) {
     
 }
 
-//delete stage
+// updating stages
+function updateStage(stage, updatedName) {
+    const stageId = parseInt(stage.id.slice(6))
+    const data = {
+        "name": updatedName
+    }
+    const url = "http://127.0.0.1:8000/api/stage/" + stageId
+    fetch(url, {
+        method: "PUT",
+        headers: HEADERS,
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => console.log("Response from server:", data))
+    .catch(error => console.error("Error:", error))
+}
 function deleteStage(stage) {
     const stageId = parseInt(stage.id.slice(6))
     const url = "http://127.0.0.1:8000/api/stage/" + stageId
@@ -230,6 +200,17 @@ function deleteStage(stage) {
     .then(response => response.json())
     .then(data => console.log("Response from server:", data))
     .catch(error => console.error("Error:", error))
+}
+function addUpdateStageNameEV(stage) {
+    stage.addEventListener('submit', (event) => {
+        event.preventDefault()
+        const renameStage = stage.querySelector('.rename-stage')
+        const stageTitle = renameStage.previousElementSibling
+        updateStage(stage, renameStage.value)
+        renameStage.classList.add('hidden')
+        stageTitle.classList.remove('hidden')
+        stageTitle.textContent = renameStage.value
+    })
 }
 
 //edit title
@@ -297,9 +278,10 @@ if (token) {
             // Render all stages
             data.data.stages.forEach(stage => {
                 document.querySelector('.container-container').innerHTML += `
-                <div class='stage' id="Stage ${stage.id}" ondragover='allowDrop(event)'>
+                <div class='stage' id="Stage ${stage.id}">
                     <form class='name-and-delete'>
                         <div class='stage-name'>${stage.name}</div>
+                        <input class='hidden rename-stage' type='text' value='${stage.name}'>
                         <i class="more-options fa-solid fa-ellipsis-vertical">
                             <div class='deleteStage hidden' type='submit'>Delete stage <i class="fa-solid fa-trash"></i></div>
                         </i>
@@ -327,7 +309,6 @@ if (token) {
                         textareaDescription = ''
                         descriptionIndicator = ''
                     }
-
                     stageElement.querySelector('.drop-target').innerHTML += `
                         <div class='task task-hover' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
                             <div class='task-text'>${task.name}</div>
@@ -337,10 +318,9 @@ if (token) {
                             <div class='hidden task-expanded-container'>
                                 <div class='expanded-task-text'>
                                     <div class='task-name'>${task.name}</div>
-                                    <input class='hidden task-name-reinput' type='text'>
+                                    <textarea class='hidden rename-task'></textarea>
                                 </div>
-                            
-                                <div class='description-title'>Description:</div>
+                                    <div class='description-title'>Description:</div>
                                 <div class='task-description' maxlength="255">${description}</div>
                                 <form class='hidden task-description-form'>
                                     <textarea class='task-description-input' type='text'  placeholder='Add a description...'>${textareaDescription}</textarea>
@@ -365,11 +345,14 @@ if (token) {
                             </div>
                         </div>`
 
+                    const taskSelector = document.getElementById(task.id)
                     if (task.colour) {
-                        stageElement.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
-                        stageElement.querySelector('.' + task.colour).classList.add('darken')
-                        stageElement.querySelector('.task-colour').classList.add(task.colour)
-                        stageElement.querySelector('.indicators').innerHTML += `<div class='colour-indicator ${task.colour}'></div>`
+                        taskSelector.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
+                        taskSelector.querySelector('.' + task.colour).classList.add('darken')
+                        taskSelector.querySelector('.task-colour').classList.add(task.colour)
+                        taskSelector.querySelector('.indicators').innerHTML += `<div class='colour-indicator ${task.colour}'></div>`
+                    } else {
+                        taskSelector.querySelector('.task-colour').textContent = 'No colour selected'
                     }
                 })
             })
@@ -428,6 +411,7 @@ if (token) {
                         newStage.setAttribute('id', 'Stage ' + data.stageId)
                         document.querySelector('.stage-name-input').value = ''
                         onEnterStage(newStage)
+                        addUpdateStageNameEV(newStage)
                     })
                     .catch(error => console.error("Error:", error))
                 }
@@ -436,9 +420,10 @@ if (token) {
                 if (inputValue) {
                     const newStage = document.querySelector('.new-stage-container')
                     const newStageHtml = `
-                        <div class='stage' id="" ondragover='allowDrop(event)'>
+                        <div class='stage' id="">
                             <form class='name-and-delete'>
                                 <div class='stage-name'>${inputValue}</div>
+                                <input class='hidden rename-stage' type='text' value='${inputValue}'>
                                 <i class="more-options fa-solid fa-ellipsis-vertical">
                                     <div class='deleteStage hidden' type='submit'>Delete stage</div>
                                 </i>
@@ -466,15 +451,14 @@ if (token) {
                 taskDraggingEventListener(task)
             })
 
-            // Handle task placeholder transfer between stage
+            // Add stage event listeners
             document.querySelectorAll('.stage').forEach(stage => {
                 onEnterStage(stage)
+                addUpdateStageNameEV(stage)
             })
 
-            
-
             // Handle task drop and position in database
-            document.addEventListener("drop", (event) => {
+            document.addEventListener('drop', (event) => {
                 event.preventDefault()
                 const placeholder = document.querySelector('.drop-placeholder-task')
                 const stage = placeholder.closest('.stage')
@@ -488,7 +472,11 @@ if (token) {
 
                     for (let i = 0; i < dropTargetArray.length; i++) {
                         if (dropTargetArray[i].getAttribute('position') != i || stage.id != originalStageId) {
-                            dropPutRequest(dropTargetArray[i], i)
+                            let data = {
+                                "position": i,
+                                "stage_id": parseInt(stage.id.slice(6))
+                            }  
+                            updateTask(dropTargetArray[i], data)
                         }
                     }
                 }
@@ -525,12 +513,15 @@ if (token) {
             const newStageExpanded = document.querySelector('.new-stage-expanded-container')
             // Handle all clicks
             let task = null
-            let taskText = null
+            let taskTitle = null
             let taskExpanded = null
             let taskDesc = null
             let taskDescForm = null
             let taskColourList = null
+            let stageTargeted = null
+            let stageName = null
             window.addEventListener("click", (event) => {
+                // console.log(window.getComputedStyle(event.target, null).getPropertyValue('font-size'))
                 // title functionality
                 if (event.target.classList.contains('title')) {
                     title.classList.add('hidden')
@@ -549,6 +540,50 @@ if (token) {
                     titleBox.classList.add('hidden')
                 }
 
+                // change stage name
+                if (event.target.classList.contains('stage-name')) {
+                    if (stageTargeted) {
+                        stageTargeted.querySelector('.stage-name').classList.remove('hidden')
+                        stageTargeted.querySelector('.rename-stage').classList.add('hidden')
+                        stageTargeted = null
+                    }
+                    stageTargeted = event.target.closest('.stage')
+                    stageName = stageTargeted.querySelector('.rename-stage').value
+                    event.target.classList.add('hidden')
+                    event.target.nextElementSibling.classList.remove('hidden')
+                } else if (stageTargeted && event.target != stageTargeted.querySelector('.rename-stage')) {
+                    if (stageTargeted.querySelector('.rename-stage').value.trim() != '') {
+                        if (stageName != stageTargeted.querySelector('.rename-stage').value) {
+                            updateStage(stageTargeted, stageTargeted.querySelector('.rename-stage').value)
+                            stageTargeted.querySelector('.stage-name').textContent = stageTargeted.querySelector('.rename-stage').value
+                        }
+                        stageTargeted.querySelector('.stage-name').classList.remove('hidden')
+                        stageTargeted.querySelector('.rename-stage').classList.add('hidden')
+                        stageTargeted = null
+                    }
+                }
+
+                // more options on stage
+                if (event.target.classList.contains('more-options')) {
+                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
+                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
+                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
+                }
+
+                // delete stage
+                if (event.target.classList.contains('deleteStage') || event.target.classList.contains('fa-trash')) {
+                    deleteStage(event.target.closest('.stage'))
+                }
+
+                // expand/contract new stage
+                if (event.target === newStage || newStage.contains(event.target)) {
+                    newStage.classList.add('hidden')
+                    newStageExpanded.classList.remove('hidden')
+                } else if (!event.target.classList.contains('stage-name-input') && (event.target != newStageExpanded || event.target === document.querySelector('.close-stage-input'))) {
+                    newStage.classList.remove('hidden')
+                    newStageExpanded.classList.add('hidden')
+                }
+
                 // add task 
                 if (event.target.classList.contains('task-name-submit')) {
                     event.preventDefault()
@@ -560,7 +595,7 @@ if (token) {
                     sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks)
                 }
 
-                // task expand
+                // task expand/contract
                 if (event.target.classList.contains('task') || event.target.classList.contains('task-text') || event.target.closest('.indicators')) {
                     if (task) {
                         taskExpanded.classList.add('hidden')
@@ -572,13 +607,44 @@ if (token) {
                     //child nodes
                     taskExpanded = task.querySelector('.task-expanded-container')
                     taskExpanded.classList.remove('hidden')
-                } else if (!event.target.closest('.task-expanded-container') && !taskColourList && !taskDesc) {
+                } else if (!event.target.closest('.task-expanded-container') && !taskColourList && !taskDesc && !taskTitle) {
                     if (task) {
                         task.querySelector('.task-expanded-container').classList.add('hidden')
                         task.setAttribute('draggable', true)
                         task.classList.add('task-hover')
                     }
                 } 
+
+                // rename task
+                if (event.target.classList.contains('task-name')) {
+                    if (taskTitle) {
+                        taskTitle.classList.remove('hidden')
+                        taskTitle.nextElementSibling.classList.add('hidden')
+                        taskTitle = null
+                    }
+                    taskTitle = event.target
+                    const renameTask = taskTitle.nextElementSibling
+                    renameTask.style.height = `${taskTitle.clientHeight}px`
+                    console.log(renameTask.style.height)
+                    renameTask.value = taskTitle.textContent
+                    taskTitle.classList.add('hidden')
+                    renameTask.classList.remove('hidden')
+                    renameTask.focus()
+                } else if (!event.target.classList.contains('rename-task')) {
+                    if (taskTitle) {
+                        const renameTask = taskTitle.nextElementSibling
+                        const task = taskTitle.closest('.task')
+                        data = {
+                            "name": renameTask.value
+                        }
+                        updateTask(task, data)
+                        taskTitle.textContent = renameTask.value 
+                        task.querySelector('.task-text').textContent = renameTask.value 
+                        taskTitle.classList.remove('hidden')
+                        renameTask.classList.add('hidden')
+                        taskTitle = null
+                    }
+                }
 
                 // task description
                 if (event.target.classList.contains('task-description')) {
@@ -620,17 +686,7 @@ if (token) {
                                 task.querySelector('.description-indicator').remove() 
                             }
                         }
-                        const url = "http://127.0.0.1:8000/api/task/" + task.id
-                        fetch(url, {
-                            method: "PUT",
-                            headers: HEADERS,
-                            body: JSON.stringify(data)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Response from server:", data)
-                        })
-                        .catch(error => console.error("Error:", error))
+                        updateTask(event.target.closest('.task'), data)
                     } 
                 }
 
@@ -663,19 +719,7 @@ if (token) {
                         const data = {
                             "colour": newColour,
                         }  
-                        
-                        const url = "http://127.0.0.1:8000/api/task/" + task.id
-
-                        fetch(url, {
-                            method: "PUT",
-                            headers: HEADERS,
-                            body: JSON.stringify(data)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Response from server:", data)
-                        })
-                        .catch(error => console.error("Error:", error))
+                        updateTask(task, data)
                         
                     }
                     taskColourList.classList.add('hidden')
@@ -704,28 +748,9 @@ if (token) {
                         stage.querySelector('.add-task-container').classList.remove('hidden')
                         stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                     })
-                }
+                }   
 
-                // more options on stage
-                if (event.target.classList.contains('more-options')) {
-                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
-                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
-                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
-                }
-
-                // delete stage
-                if (event.target.classList.contains('deleteStage') || event.target.classList.contains('fa-trash')) {
-                    deleteStage(event.target.closest('.stage'))
-                }
-
-                // expand/contract new stage
-                if (event.target === newStage || newStage.contains(event.target)) {
-                    newStage.classList.add('hidden')
-                    newStageExpanded.classList.remove('hidden')
-                } else if (!event.target.classList.contains('stage-name-input') && (event.target != newStageExpanded || event.target === document.querySelector('.close-stage-input'))) {
-                    newStage.classList.remove('hidden')
-                    newStageExpanded.classList.add('hidden')
-                }
+                
 
                 if (event.target.classList.contains('.close-stage-input')) {
                     console.log('a')

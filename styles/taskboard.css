@@ -99,6 +99,10 @@ header {
     
 }
 
+/* Stage related CSS */
+
+/* New Stage */
+
 .new-stage-container {
     /* Display */
     display: flex;
@@ -146,38 +150,6 @@ i {
     /* Colour */
     color: black;
     background-color: #CAD5CA;
-}
-
-
-.stage {
-    /* Display */
-    flex-shrink: 0;
-    align-items: center;
-    width: 190px;
-    border-radius: 10px;
-    margin: 20px;
-    padding-left: 5px;
-    padding-right: 5px;
-
-    /* Colour */
-    color: #211A1D;
-    background-color: #CAD5CA;
-}
-
-.name-and-delete {
-    /* Display */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 30px;
-    padding-left: 5px;
-    padding-top: 5px;
-    border-bottom: #3b2f34 1px solid;
-}
-
-.stage-name {
-    /* Font */
-    font-weight: 600;
 }
 
 .stage-name-input {
@@ -239,6 +211,59 @@ i {
     cursor: pointer;
 }
 
+/* Stages */
+
+.stage {
+    /* Display */
+    flex-shrink: 0;
+    align-items: center;
+    width: 190px;
+    border-radius: 10px;
+    margin: 20px;
+    padding-left: 5px;
+    padding-right: 5px;
+
+    /* Colour */
+    color: #211A1D;
+    background-color: #CAD5CA;
+}
+
+.name-and-delete {
+    /* Display */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 30px;
+    padding-left: 5px;
+    padding-top: 5px;
+    border-bottom: #3b2f34 1px solid;
+}
+
+.stage-name {
+    /* Font */
+    flex-grow: 1;
+    font-weight: 600;
+    height: 18px;
+    border: 1px solid transparent;
+}
+.stage-name:hover {
+   /* Colour */
+    background-color: #acbcac;
+    cursor: pointer;
+}
+
+.rename-stage {
+    /* Display */
+    width: 167px;
+    padding: 0;
+    border: #211A1D solid 1px;
+    height: 18px;
+
+    /* Text */
+    font-weight: 600;
+    font-size: 16px;
+}
+
 .more-options {
     /* Position */
     position: relative;
@@ -275,6 +300,12 @@ i {
 
     cursor: pointer;
 }
+
+
+
+/* Task CSS */
+
+/* Task */
 
 .task-container {
     /* Position */
@@ -330,6 +361,8 @@ i {
     font-size: 10px;
 }
 
+/* Task Expanded */
+
 .task-expanded-container {
     /* Position */
     position: absolute;
@@ -355,11 +388,37 @@ i {
 
 .task-name {
     /* Display */
-    padding: 6.5px 0 4px 0;
+    flex-grow: 1;
+    margin: 6.5px 0 4px 0;
+    border: transparent solid 1px;
 
     /* Font */ 
     font-size: 15px;
     font-weight: 600;
+}
+.task-name:hover {
+    /* Colour */
+    background-color: #acbcac;
+    cursor: pointer;
+}
+
+.rename-task {
+    all: unset;
+
+    /* Display */
+    width: 178.933px;
+    margin: 6.5px 0 4px 0;
+    padding: 0;
+    border: black 1px solid;
+
+    /* Colour */
+    background-color: white;
+
+    /* Font */ 
+    font-size: 15px;
+    font-weight: 600;
+    word-break: break-word;
+    overflow: hidden;
 }
 
 .colour-container {
@@ -400,9 +459,15 @@ i {
 
 .task-colour {
     /* Display */
-    height: 13.86px;
+    height: 12.86px;
+    padding-top: 1px;
     width: 111px;
     border-radius: 99px;
+
+    /* Text */
+    font-weight: 300;
+    font-size: 10px;
+    text-align: center;
 }
 
 .colour-title {
@@ -484,12 +549,8 @@ i {
 }
 
 .task-description:hover {
-    /* Display */
-    border: #716d6f solid 1px;
-
     /* Colour */
     background-color: #acbcac;
-
     cursor: pointer;
 }
 
