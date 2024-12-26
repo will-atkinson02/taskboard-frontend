@@ -30,7 +30,7 @@ function drag(event) {
     isDragging = true
     event.dataTransfer.setData("text", event.target.id)
 }
-function taskDraggingEventListener(task) {
+function addtaskDraggingEL(task) {
     task.addEventListener('dragstart', (event) => {
         originalStageId = event.target.closest('.stage').id
         elementId = event.target.id
@@ -115,7 +115,7 @@ function updateTask(task, data) {
     })
     .catch(error => console.error("Error:", error))
 }
-function sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks) {
+function sendTaskDataRequest(stage, taskNameInput, numberOfTasks) {
     const jsonData = {
         "name": taskNameInput.value,
         "position": numberOfTasks,
@@ -138,7 +138,7 @@ function sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks) {
                     taskText.closest('.task').setAttribute('id', data.taskId)
                     taskText.closest('.task').setAttribute('draggable', 'true')
                     document.querySelectorAll('.task').forEach(task => {
-                        taskDraggingEventListener(task)
+                        addtaskDraggingEL(task)
                     })
                 }
             })
@@ -146,7 +146,7 @@ function sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks) {
         .catch(error => console.error("Error:", error))
     }
 }
-function displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks) {
+function displayNewTaskTemp(stage, taskNameInput, numberOfTasks) {
     stage.querySelector('.drop-target').innerHTML += `
         <div class='task task-hover' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
             <div class='task-text'>${taskNameInput.value}</div>
@@ -168,9 +168,6 @@ function displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks) {
                 <div class='task-colour'></div>
             </div>
         </div>`
-    stage.querySelector('.add-task-container').classList.remove('hidden')
-    stage.querySelector('.add-task-expanded-container').classList.add('hidden')
-    
 }
 
 // updating stages
@@ -201,7 +198,7 @@ function deleteStage(stage) {
     .then(data => console.log("Response from server:", data))
     .catch(error => console.error("Error:", error))
 }
-function addUpdateStageNameEV(stage) {
+function addUpdateStageNameEL(stage) {
     stage.addEventListener('submit', (event) => {
         event.preventDefault()
         const renameStage = stage.querySelector('.rename-stage')
@@ -368,119 +365,10 @@ if (token) {
                 <input class="stage-name-input" type="text" name="name" placeholder="Enter stage name...">
                 <div>
                     <input class="stage-name-submit" value="Add stage" type="submit">
-                    <button class='close-stage-input'><i class="fa-solid fa-xmark"></i></button>
+                    <button class='close-stage-input' type="button"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </form>
             `
-
-            // Submit change title request
-            document.querySelector('.title-form').addEventListener('submit', (event) => {
-                title.classList.remove('hidden')
-                titleBox.classList.add('hidden')
-
-                event.preventDefault()
-                if (initialTitleValue != titleBox.value) {
-                    let form = event.target
-                    let formData = new FormData(form)
-                    let jsonData = Object.fromEntries(formData.entries())
-                    changeTitleRequest(taskboardId, token, jsonData)
-                }
-            })
-
-            // Add new stage
-            document.querySelector('.new-stage-expanded-container').addEventListener('submit', (event) => {
-                event.preventDefault()
-
-                let form = event.target
-                let formData = new FormData(form)
-                let jsonData = Object.fromEntries(formData.entries())
-                jsonData.taskboard_id = taskboardId
-
-                if (jsonData.name) {
-                    fetch("http://127.0.0.1:8000/api/stage", {
-                        method: "POST",
-                        headers: HEADERS,
-                        body: JSON.stringify(jsonData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Response from server:", data)
-                        const stageContainer = document.querySelector('.container-container')
-                        const allStages = stageContainer.children
-                        const newStage = allStages[allStages.length - 3]
-                        newStage.setAttribute('id', 'Stage ' + data.stageId)
-                        document.querySelector('.stage-name-input').value = ''
-                        onEnterStage(newStage)
-                        addUpdateStageNameEV(newStage)
-                    })
-                    .catch(error => console.error("Error:", error))
-                }
-
-                const inputValue = document.querySelector('.stage-name-input').value
-                if (inputValue) {
-                    const newStage = document.querySelector('.new-stage-container')
-                    const newStageHtml = `
-                        <div class='stage' id="">
-                            <form class='name-and-delete'>
-                                <div class='stage-name'>${inputValue}</div>
-                                <input class='hidden rename-stage' type='text' value='${inputValue}'>
-                                <i class="more-options fa-solid fa-ellipsis-vertical">
-                                    <div class='deleteStage hidden' type='submit'>Delete stage</div>
-                                </i>
-                            </form>
-                            <div class='drop-target'></div>
-                            <div class='add-task-container'><i class="plus-task fa-duotone fa-solid fa-plus"></i> Add task</div>
-                            <form class='add-task-expanded-container hidden'>
-                                <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
-                                <div>
-                                    <button class='task-name-submit'>Add task</button>
-                                    <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
-                                </div>
-                            </form>
-                        </div>
-                        `
-
-                    newStage.insertAdjacentHTML('beforebegin', newStageHtml)
-                    document.querySelector('.new-stage-container').classList.remove('hidden')
-                    document.querySelector('.new-stage-expanded-container').classList.add('hidden')
-                }
-            })
-
-            // Add task dragging event listener to all tasks
-            document.querySelectorAll('.task').forEach(task => {
-                taskDraggingEventListener(task)
-            })
-
-            // Add stage event listeners
-            document.querySelectorAll('.stage').forEach(stage => {
-                onEnterStage(stage)
-                addUpdateStageNameEV(stage)
-            })
-
-            // Handle task drop and position in database
-            document.addEventListener('drop', (event) => {
-                event.preventDefault()
-                const placeholder = document.querySelector('.drop-placeholder-task')
-                const stage = placeholder.closest('.stage')
-                placeholder.insertAdjacentElement('afterend', draggedTask)
-                placeholder.remove()
-                isDragging = false
-                draggedTaskHeight = null
-                if (event.target.closest('.stage') || placeholder) {
-                    const dropTarget = stage.querySelector('.drop-target')
-                    const dropTargetArray = Array.from(dropTarget.children)
-
-                    for (let i = 0; i < dropTargetArray.length; i++) {
-                        if (dropTargetArray[i].getAttribute('position') != i || stage.id != originalStageId) {
-                            let data = {
-                                "position": i,
-                                "stage_id": parseInt(stage.id.slice(6))
-                            }  
-                            updateTask(dropTargetArray[i], data)
-                        }
-                    }
-                }
-            })
 
             // Dynamic title input code
             let titleWidth = title.getBoundingClientRect().width
@@ -508,6 +396,153 @@ if (token) {
                 }
             })
 
+            // Submit change title request
+            document.querySelector('.title-form').addEventListener('submit', (event) => {
+                title.classList.remove('hidden')
+                titleBox.classList.add('hidden')
+
+                event.preventDefault()
+                if (initialTitleValue != titleBox.value) {
+                    let form = event.target
+                    let formData = new FormData(form)
+                    let jsonData = Object.fromEntries(formData.entries())
+                    changeTitleRequest(taskboardId, token, jsonData)
+                }
+            })
+
+            // Add new stage
+            document.querySelector('.new-stage-expanded-container').addEventListener('submit', (event) => {
+                event.preventDefault()
+                let form = event.target
+                let formData = new FormData(form)
+                let jsonData = Object.fromEntries(formData.entries())
+                jsonData.taskboard_id = taskboardId
+
+                if (jsonData.name) {
+                    fetch("http://127.0.0.1:8000/api/stage", {
+                        method: "POST",
+                        headers: HEADERS,
+                        body: JSON.stringify(jsonData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Response from server:", data)
+                        const stageContainer = document.querySelector('.container-container')
+                        const allStages = stageContainer.children
+                        const newStage = allStages[allStages.length - 3]
+                        newStage.setAttribute('id', 'Stage ' + data.stageId)
+                        document.querySelector('.stage-name-input').value = ''
+                        onEnterStage(newStage)
+                        addUpdateStageNameEL(newStage)
+                    })
+                    .catch(error => console.error("Error:", error))
+                }
+
+                const inputValue = document.querySelector('.stage-name-input').value
+                if (inputValue) {
+                    const newStage = document.querySelector('.new-stage-container')
+                    const newStageHtml = `
+                        <div class='stage' id="">
+                            <form class='name-and-delete'>
+                                <div class='stage-name'>${inputValue}</div>
+                                <input class='hidden rename-stage' type='text' value='${inputValue}'>
+                                <i class="more-options fa-solid fa-ellipsis-vertical">
+                                    <div class='deleteStage hidden' type='submit'>Delete stage</div>
+                                </i>
+                            </form>
+                            <div class='drop-target'></div>
+                            <div class='add-task-container'><i class="plus-task fa-duotone fa-solid fa-plus"></i> Add task</div>
+                            <form class='add-task-expanded-container hidden'>
+                                <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
+                                <div>
+                                    <button class='task-name-submit'>Add task</button>
+                                    <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </form>
+                        </div>`
+
+                    newStage.insertAdjacentHTML('beforebegin', newStageHtml)
+                    document.querySelector('.new-stage-container').classList.remove('hidden')
+                    document.querySelector('.new-stage-expanded-container').classList.add('hidden')
+                }
+            })
+
+            // Add stage event listeners
+            document.querySelectorAll('.stage').forEach(stage => {
+                onEnterStage(stage)
+                addUpdateStageNameEL(stage)
+            })
+
+            // Add task dragging event listener to all tasks
+            document.querySelectorAll('.task').forEach(task => {
+                addtaskDraggingEL(task)
+            })
+
+            // Handle task drop and position in database
+            document.addEventListener('drop', (event) => {
+                event.preventDefault()
+                const placeholder = document.querySelector('.drop-placeholder-task')
+                const stage = placeholder.closest('.stage')
+                placeholder.insertAdjacentElement('afterend', draggedTask)
+                placeholder.remove()
+                isDragging = false
+                draggedTaskHeight = null
+                if (event.target.closest('.stage') || placeholder) {
+                    const dropTarget = stage.querySelector('.drop-target')
+                    const dropTargetArray = Array.from(dropTarget.children)
+
+                    for (let i = 0; i < dropTargetArray.length; i++) {
+                        if (dropTargetArray[i].getAttribute('position') != i || stage.id != originalStageId) {
+                            let data = {
+                                "position": i,
+                                "stage_id": parseInt(stage.id.slice(6))
+                            }  
+                            updateTask(dropTargetArray[i], data)
+                        }
+                    }
+                }
+            })
+
+            // handle task input submits
+            document.querySelectorAll('.task-name-input').forEach(taskNameInput => {
+                taskNameInput.addEventListener('keydown', (event) => {
+                    const stage = taskNameInput.closest('.stage')
+                    const numberOfTasks = stage.querySelector('.drop-target').childElementCount
+                    if (event.key === 'Enter') {
+                        displayNewTaskTemp(stage, taskNameInput, numberOfTasks)
+                        sendTaskDataRequest(stage, taskNameInput, numberOfTasks)
+                        stage.querySelector('.add-task-container').classList.remove('hidden')
+                        stage.querySelector('.add-task-expanded-container').classList.add('hidden')
+                    }
+                })
+            })
+
+            // prevent long tasknames
+            let overflowCount = 0
+            let lineHeight = 17
+            document.querySelectorAll('.rename-task').forEach(renameTask => {
+                renameTask.addEventListener("input", () => {
+                    while (renameTask.scrollHeight > renameTask.clientHeight) {
+                        if (lineHeight < 34) {
+                            lineHeight += 17
+                            renameTask.style.height = `${lineHeight}px`
+                        } else {
+                            renameTask.value = renameTask.value.slice(0, -1)
+                        }
+                    }
+
+                    renameTask.style.height = '17px'
+                    if (renameTask.scrollHeight > renameTask.clientHeight) {
+                        renameTask.style.height = '34px'
+                        lineHeight = 34
+                    } else {
+                        lineHeight = 17
+                    }
+                })
+            })
+
+            // task description input
+
             // stage consts
             const newStage = document.querySelector('.new-stage-container')
             const newStageExpanded = document.querySelector('.new-stage-expanded-container')
@@ -521,7 +556,6 @@ if (token) {
             let stageTargeted = null
             let stageName = null
             window.addEventListener("click", (event) => {
-                // console.log(window.getComputedStyle(event.target, null).getPropertyValue('font-size'))
                 // title functionality
                 if (event.target.classList.contains('title')) {
                     title.classList.add('hidden')
@@ -579,7 +613,10 @@ if (token) {
                 if (event.target === newStage || newStage.contains(event.target)) {
                     newStage.classList.add('hidden')
                     newStageExpanded.classList.remove('hidden')
-                } else if (!event.target.classList.contains('stage-name-input') && (event.target != newStageExpanded || event.target === document.querySelector('.close-stage-input'))) {
+                } else if (!event.target.classList.contains('stage-name-input') && event.target != newStageExpanded) {
+                    if (event.target.closest('.close-stage-input')) {
+                        newStageExpanded.querySelector('.stage-name-input').value = ''
+                    }
                     newStage.classList.remove('hidden')
                     newStageExpanded.classList.add('hidden')
                 }
@@ -591,8 +628,15 @@ if (token) {
                     const taskNameInput = stage.querySelector('.task-name-input')
                     const dropTarget = stage.querySelector('.drop-target')
                     const numberOfTasks = dropTarget.childElementCount
-                    displayNewTaskTemp(event, stage, taskNameInput, numberOfTasks)
-                    sendTaskDataRequest(event, stage, taskNameInput, numberOfTasks)
+                    displayNewTaskTemp(stage, taskNameInput, numberOfTasks)
+                    sendTaskDataRequest(stage, taskNameInput, numberOfTasks)
+                    stage.querySelector('.add-task-container').classList.remove('hidden')
+                    stage.querySelector('.add-task-expanded-container').classList.add('hidden')
+                } else if (event.target.closest('.close-task-input')) {
+                    const stage = event.target.closest('.stage')
+                    stage.querySelector('.task-name-input').value = ''
+                    stage.querySelector('.add-task-container').classList.remove('hidden')
+                    stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                 }
 
                 // task expand/contract
@@ -625,7 +669,6 @@ if (token) {
                     taskTitle = event.target
                     const renameTask = taskTitle.nextElementSibling
                     renameTask.style.height = `${taskTitle.clientHeight}px`
-                    console.log(renameTask.style.height)
                     renameTask.value = taskTitle.textContent
                     taskTitle.classList.add('hidden')
                     renameTask.classList.remove('hidden')
@@ -702,13 +745,18 @@ if (token) {
                         const taskColourElement = event.target.closest('.task-colour-container').querySelector('.task-colour')
                         const originalColour = taskColourElement.className.slice(12)
                         const newColour = event.target.className.slice(19)
+                        
                         if (originalColour.trim() != '') {
                             taskColourList.querySelector('.' + originalColour).classList.remove('darken')
                             taskColourList.querySelector('.check').remove()
                         }
+
+                        taskColourElement.textContent = ''
+
                         taskColourList.querySelector('.' + newColour).classList.add('darken')
                         taskColourList.querySelector('.' + newColour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                         taskColourElement.className = taskColourElement.className.slice(0, 11) + ' ' + newColour
+                        
                         if (!task.querySelector('.colour-indicator')) {
                             task.querySelector('.indicators').innerHTML += `<div class='colour-indicator'></div>`
                         } else {
@@ -749,12 +797,6 @@ if (token) {
                         stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                     })
                 }   
-
-                
-
-                if (event.target.classList.contains('.close-stage-input')) {
-                    console.log('a')
-                }
             })
         }).catch(error => console.error('Error:', error))
 }
