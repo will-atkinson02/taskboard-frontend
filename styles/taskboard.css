@@ -559,7 +559,9 @@ i {
 
     /* Display */
     margin: 0 5px 0 5px;
-    height: 206px;
+    min-height: 42px;
+    max-height: 182px;
+    height: none;
     width: 178.33px;
     border: #211A1D solid 1px;
 

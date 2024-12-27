@@ -518,30 +518,50 @@ if (token) {
             })
 
             // prevent long tasknames
-            let overflowCount = 0
-            let lineHeight = 17
+            let taskLineHeight = 17
             document.querySelectorAll('.rename-task').forEach(renameTask => {
                 renameTask.addEventListener("input", () => {
                     while (renameTask.scrollHeight > renameTask.clientHeight) {
-                        if (lineHeight < 34) {
-                            lineHeight += 17
-                            renameTask.style.height = `${lineHeight}px`
+                        if (taskLineHeight < 34) {
+                            taskLineHeight += 17
+                            renameTask.style.height = `${taskLineHeight}px`
                         } else {
                             renameTask.value = renameTask.value.slice(0, -1)
                         }
                     }
-
+                    console.log(renameTask.style.height)
                     renameTask.style.height = '17px'
                     if (renameTask.scrollHeight > renameTask.clientHeight) {
                         renameTask.style.height = '34px'
-                        lineHeight = 34
+                        taskLineHeight = 34
                     } else {
-                        lineHeight = 17
+                        taskLineHeight = 17
                     }
                 })
             })
 
             // task description input
+            let descLineHeight = 42
+            document.querySelectorAll('.task-description-input').forEach(descInput => {
+                descInput.addEventListener("keydown", (event) => {
+                    while (descInput.scrollHeight > descInput.clientHeight) {
+                        if (descLineHeight < 182) {
+                            descLineHeight += 14
+                            descInput.style.height = `${descLineHeight}px`
+                            console.log(descInput.clientHeight, descLineHeight)
+                        } else {
+                            descInput.value = descInput.value.slice(0, -1)
+                            descLineHeight -= 14
+                        }
+                    }
+                    descInput.style.height = `${parseInt(descInput.style.height.slice(0, -2)) - 14}px`
+                    if (descInput.scrollHeight > descInput.clientHeight) {
+                        descInput.style.height = `${parseInt(descInput.style.height.slice(0, -2)) + 14}px`
+                    } else {
+                        descLineHeight -= 14
+                    }
+                })
+            })
 
             // stage consts
             const newStage = document.querySelector('.new-stage-container')
