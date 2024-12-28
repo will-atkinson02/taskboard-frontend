@@ -473,6 +473,15 @@ if (token) {
                 addUpdateStageNameEL(stage)
             })
 
+            // prevent long stagenames
+            document.querySelectorAll('.rename-stage').forEach(renameStage => {
+                renameStage.addEventListener("input", () => {
+                    while (renameStage.scrollWidth > renameStage.clientWidth) {
+                        renameStage.value = renameStage.value.slice(0, -1)
+                    }
+                })
+            })
+
             // Add task dragging event listener to all tasks
             document.querySelectorAll('.task').forEach(task => {
                 addtaskDraggingEL(task)
@@ -543,23 +552,25 @@ if (token) {
             // task description input
             let descLineHeight = 42
             document.querySelectorAll('.task-description-input').forEach(descInput => {
-                descInput.addEventListener("keydown", (event) => {
-                    while (descInput.scrollHeight > descInput.clientHeight) {
-                        if (descLineHeight < 182) {
-                            descLineHeight += 14
-                            descInput.style.height = `${descLineHeight}px`
-                            console.log(descInput.clientHeight, descLineHeight)
-                        } else {
-                            descInput.value = descInput.value.slice(0, -1)
-                            descLineHeight -= 14
-                        }
+                const descriptionElement = descInput.closest('.task-description-form').previousElementSibling
+                const taskExpandedContainer = descriptionElement.closest('.task-expanded-container')
+                if (descInput.value.trim() != '') {
+                    descriptionElement.textContent = descInput.value
+                    taskExpandedContainer.classList.remove('hidden')
+                    descInput.style.height = `${descriptionElement.clientHeight}px`
+                    taskExpandedContainer.classList.add('hidden')
+                }
+                descInput.addEventListener("keyup", (event) => {
+                    if (event.key.length < 2 || event.key === 'Backspace' || event.key === 'Delete') {
+                        descriptionElement.textContent = descInput.value
+                    } 
+                    descriptionElement.classList.remove('hidden')
+                    while (descriptionElement.clientHeight >= 182) {
+                        descInput.value = descInput.value.slice(0, -1)
+                        descriptionElement.textContent = descInput.value
                     }
-                    descInput.style.height = `${parseInt(descInput.style.height.slice(0, -2)) - 14}px`
-                    if (descInput.scrollHeight > descInput.clientHeight) {
-                        descInput.style.height = `${parseInt(descInput.style.height.slice(0, -2)) + 14}px`
-                    } else {
-                        descLineHeight -= 14
-                    }
+                    descInput.style.height = `${descriptionElement.clientHeight}px`
+                    descriptionElement.classList.add('hidden')
                 })
             })
 
