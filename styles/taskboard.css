@@ -276,12 +276,23 @@ i {
     left: 25px;
     top: -7px;
 
+    /* Colour */
+    color: rgb(19, 134, 43);
+    background-color: white;
+
     /* Display */
     height: 15px;
     width: 15px;
-    border: red solid 1px;
+    border: rgb(19, 134, 43) solid 1px;
     border-radius: 5px;
     padding: 5px 4px 5px 6px;
+}
+
+.move-left:hover {
+    /* Colour */
+    background-color: rgb(167, 159, 159);
+
+    cursor: pointer;
 }
 
 .fa-arrow-left {
@@ -295,12 +306,23 @@ i {
     left: 25px;
     top: 23px;
 
+    /* Colour */
+    color: rgb(96, 29, 254);
+    background-color: white;
+
     /* Display */
     height: 15px;
     width: 15px;
-    border: red solid 1px;
+    border: rgb(96, 29, 254) solid 1px;
     border-radius: 5px;
     padding: 5px 4px 5px 6px;
+}
+
+.move-right:hover {
+    /* Colour */
+    background-color: rgb(167, 159, 159);
+
+    cursor: pointer;
 }
 
 .fa-arrow-right {
@@ -332,7 +354,7 @@ i {
     text-align: center;
 }
 
-.deleteStage:hover {
+.delete-stage:hover {
     /* Colour */
     background-color: rgb(167, 159, 159);
 
