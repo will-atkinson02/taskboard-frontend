@@ -341,6 +341,9 @@ if (token) {
                                         </div>
                                     </div>
                                 </div>
+                                <div class='delete-task-container'>
+                                    <div class='delete-task'><i class="trash-svg-2 fa-solid fa-trash"></i></div>
+                                </div>
                             </div>
                         </div>`
 
@@ -452,7 +455,7 @@ if (token) {
                                 <i class="more-options fa-solid fa-ellipsis-vertical">
                                     <div class='move-left hidden' type='submit'><i class="fa-solid fa-arrow-left"></i></div>
                                     <div class='move-right hidden' type='submit'><i class="fa-solid fa-arrow-right"></i></div>
-                                    <div class='delete-stage hidden' type='submit'><i class="fa-solid fa-trash"></i></div>
+                                    <div class='delete-stage hidden' type='submit'><i class="trash-svg-1 fa-solid fa-trash"></i></div>
                                 </i>
                             </form>
                             <div class='drop-target'></div>
@@ -706,7 +709,7 @@ if (token) {
                 }
 
                 // delete stage
-                if (event.target.classList.contains('delete-stage') || event.target.classList.contains('fa-trash')) {
+                if (event.target.classList.contains('delete-stage') || event.target.classList.contains('trash-svg-1')) {
                     deleteStage(event.target.closest('.stage'))
                 }
 
@@ -873,6 +876,20 @@ if (token) {
                     }
                     taskColourList.classList.add('hidden')
                     taskColourList = null
+                }
+
+                // delete task
+                if (event.target.closest('.delete-task-container')) {
+                    const task = event.target.closest('.task')
+                    const url = "http://127.0.0.1:8000/api/task/" + task.id.toString()
+                    task.remove()
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: HEADERS
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log("Response from server:", data))
+                    .catch(error => console.error("Error:", error))
                 }
 
                 // expand/contract add tasks

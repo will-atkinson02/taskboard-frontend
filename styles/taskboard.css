@@ -393,7 +393,7 @@ i {
 .task-hover:hover {
     /* Colour */
     color: #211A1D;
-    background-color: #5c615c;
+    background-color: #a8b1a8;
 
     cursor: pointer;
 }
@@ -797,6 +797,38 @@ i {
     /* Colour */
     color: black;
     background-color: #F8F0FB;
+}
+
+.delete-task-container {
+    /* Display */
+    display: flex;
+    justify-content: end;
+    margin: 0 5px 0 5px;
+    padding: 5px 0 5px 0;
+    width: 180px;
+    border-top: #211A1D solid 1px;
+}
+
+.delete-task {
+    /* Display */
+    display: flex;
+    width: 20px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    border: #211A1D solid 1px;
+}
+
+.delete-task:hover {
+    background-color: #d9c4cd;
+    color: #4e3f45;
+
+    cursor: pointer;
+}
+
+.trash-svg-2 {
+    font-size: 14px;
 }
 
 .hidden {
