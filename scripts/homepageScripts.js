@@ -59,7 +59,7 @@ if (!token) {
             sessionStorage.setItem('username', jsonData.username)
             sessionStorage.setItem('auth_token', data.token)
             document.querySelector('.login-form-container').remove()
-            window.location.reload()
+            // window.location.reload()
         })
         .catch(error => console.error("Error:", error))
     })
@@ -98,10 +98,6 @@ if (!token) {
 
     
     let userJson = {username: sessionStorage.getItem('username')}
-
-    const logoutElements = [document.querySelector('.header-link'), 
-                            document.querySelector('i'),
-                            document.querySelector('.logout-text')]
 
     window.addEventListener('click', (event) => {  
         // Logout button functionality
