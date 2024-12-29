@@ -171,11 +171,8 @@ function displayNewTaskTemp(stage, taskNameInput, numberOfTasks) {
 }
 
 // updating stages
-function updateStage(stage, updatedName) {
+function updateStage(stage, data) {
     const stageId = parseInt(stage.id.slice(6))
-    const data = {
-        "name": updatedName
-    }
     const url = "http://127.0.0.1:8000/api/stage/" + stageId
     fetch(url, {
         method: "PUT",
@@ -203,7 +200,10 @@ function addUpdateStageNameEL(stage) {
         event.preventDefault()
         const renameStage = stage.querySelector('.rename-stage')
         const stageTitle = renameStage.previousElementSibling
-        updateStage(stage, renameStage.value)
+        const data = {
+            "name": renameStage.value
+        }
+        updateStage(stage, data)
         renameStage.classList.add('hidden')
         stageTitle.classList.remove('hidden')
         stageTitle.textContent = renameStage.value
@@ -275,12 +275,14 @@ if (token) {
             // Render all stages
             data.data.stages.forEach(stage => {
                 document.querySelector('.container-container').innerHTML += `
-                <div class='stage' id="Stage ${stage.id}">
+                <div class='stage' id="Stage ${stage.id}" position="${stage.position}">
                     <form class='name-and-delete'>
                         <div class='stage-name'>${stage.name}</div>
                         <input class='hidden rename-stage' type='text' value='${stage.name}'>
                         <i class="more-options fa-solid fa-ellipsis-vertical">
-                            <div class='deleteStage hidden' type='submit'>Delete stage <i class="fa-solid fa-trash"></i></div>
+                            <div class='move-left hidden' type='submit'><i class="fa-solid fa-arrow-left"></i></div>
+                            <div class='move-right hidden' type='submit'><i class="fa-solid fa-arrow-right"></i></div>
+                            <div class='delete-stage hidden' type='submit'><i class="fa-solid fa-trash"></i></div>
                         </i>
                     </form>
                     <div class='drop-target'></div>
@@ -416,6 +418,7 @@ if (token) {
                 let form = event.target
                 let formData = new FormData(form)
                 let jsonData = Object.fromEntries(formData.entries())
+                jsonData.position = document.querySelector('.container-container').childElementCount - 2
                 jsonData.taskboard_id = taskboardId
 
                 if (jsonData.name) {
@@ -442,12 +445,14 @@ if (token) {
                 if (inputValue) {
                     const newStage = document.querySelector('.new-stage-container')
                     const newStageHtml = `
-                        <div class='stage' id="">
+                        <div class='stage' id="" position='${jsonData.position}'>
                             <form class='name-and-delete'>
                                 <div class='stage-name'>${inputValue}</div>
                                 <input class='hidden rename-stage' type='text' value='${inputValue}'>
                                 <i class="more-options fa-solid fa-ellipsis-vertical">
-                                    <div class='deleteStage hidden' type='submit'>Delete stage</div>
+                                    <div class='move-left hidden' type='submit'><i class="fa-solid fa-arrow-left"></i></div>
+                                    <div class='move-right hidden' type='submit'><i class="fa-solid fa-arrow-right"></i></div>
+                                    <div class='delete-stage hidden' type='submit'><i class="fa-solid fa-trash"></i></div>
                                 </i>
                             </form>
                             <div class='drop-target'></div>
@@ -584,6 +589,7 @@ if (token) {
             let taskDesc = null
             let taskDescForm = null
             let taskColourList = null
+            let optionsPressed = null
             let stageTargeted = null
             let stageName = null
             window.addEventListener("click", (event) => {
@@ -619,7 +625,10 @@ if (token) {
                 } else if (stageTargeted && event.target != stageTargeted.querySelector('.rename-stage')) {
                     if (stageTargeted.querySelector('.rename-stage').value.trim() != '') {
                         if (stageName != stageTargeted.querySelector('.rename-stage').value) {
-                            updateStage(stageTargeted, stageTargeted.querySelector('.rename-stage').value)
+                            const data = {
+                                "name": stageTargeted.querySelector('.rename-stage').value
+                            }
+                            updateStage(stageTargeted, data)
                             stageTargeted.querySelector('.stage-name').textContent = stageTargeted.querySelector('.rename-stage').value
                         }
                         stageTargeted.querySelector('.stage-name').classList.remove('hidden')
@@ -630,13 +639,74 @@ if (token) {
 
                 // more options on stage
                 if (event.target.classList.contains('more-options')) {
-                    event.target.closest('.stage').querySelector('.deleteStage').classList.remove('hidden')
-                } else if (!event.target.classList.contains('deleteStage') && document.querySelectorAll('.deleteStage:not(.hidden)')[0]) {
-                    document.querySelectorAll('.deleteStage:not(.hidden)')[0].classList.add('hidden')
+                    if (optionsPressed) {
+                        optionsPressed.querySelector('.delete-stage').classList.add('hidden')
+                        optionsPressed.querySelector('.move-right').classList.add('hidden')
+                        optionsPressed.querySelector('.move-left').classList.add('hidden')
+                        optionsPressed = null
+                    } 
+                    optionsPressed = event.target.closest('.stage')
+                    optionsPressed.querySelector('.delete-stage').classList.remove('hidden')
+                    optionsPressed.querySelector('.move-right').classList.remove('hidden')
+                    optionsPressed.querySelector('.move-left').classList.remove('hidden')
+                } else if (optionsPressed && (!event.target.classList.contains('delete-stage') || 
+                           !event.target.classList.contains('move-right') ||
+                           !event.target.classList.contains('move-left'))) {
+                    optionsPressed.querySelector('.delete-stage').classList.add('hidden')
+                    optionsPressed.querySelector('.move-right').classList.add('hidden')
+                    optionsPressed.querySelector('.move-left').classList.add('hidden')
+                    optionsPressed = null
+                }
+
+                // move stage right
+                if (event.target.closest('.move-right')) {
+                    const container = document.querySelector('.container-container')
+                    const stage = event.target.closest('.stage')
+                    const stagePosition = parseInt(stage.getAttribute("position"))
+                    if (stagePosition < container.childElementCount - 2) {
+                        const nextStage = stage.nextElementSibling
+                        const nextStagePosition = parseInt(nextStage.getAttribute("position"))
+                        
+                        container.insertBefore(nextStage, stage)
+                        stage.setAttribute("position", stagePosition + 1)
+                        nextStage.setAttribute("position", nextStagePosition - 1)
+
+                        const dataA = {
+                            "position": stagePosition + 1
+                        }
+                        const dataB = {
+                            "position": nextStagePosition - 1
+                        }
+
+                        updateStage(stage, dataA)
+                        updateStage(nextStage, dataB)
+                    }
+                }
+                if (event.target.closest('.move-left')) {
+                    const container = document.querySelector('.container-container')
+                    const stage = event.target.closest('.stage')
+                    const stagePosition = parseInt(stage.getAttribute("position"))
+                    if (stagePosition > 0) {
+                        const previousStage = stage.previousElementSibling
+                        const previousStagePosition = parseInt(previousStage.getAttribute("position"))
+                        
+                        container.insertBefore(stage, previousStage)
+                        stage.setAttribute("position", stagePosition - 1)
+                        previousStage.setAttribute("position", previousStagePosition + 1)
+                        
+                        const dataA = {
+                            "position": stagePosition - 1
+                        }
+                        const dataB = {
+                            "position": previousStagePosition + 1
+                        }
+                        updateStage(stage, dataA)
+                        updateStage(previousStage, dataB)
+                    }
                 }
 
                 // delete stage
-                if (event.target.classList.contains('deleteStage') || event.target.classList.contains('fa-trash')) {
+                if (event.target.classList.contains('delete-stage') || event.target.classList.contains('fa-trash')) {
                     deleteStage(event.target.closest('.stage'))
                 }
 
