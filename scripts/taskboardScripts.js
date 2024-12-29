@@ -147,27 +147,48 @@ function sendTaskDataRequest(stage, taskNameInput, numberOfTasks) {
     }
 }
 function displayNewTaskTemp(stage, taskNameInput, numberOfTasks) {
-    stage.querySelector('.drop-target').innerHTML += `
-        <div class='task task-hover' id='' position='${numberOfTasks}' draggable='true' ondragstart='drag(event)'>
-            <div class='task-text'>${taskNameInput.value}</div>
-            <div class='hidden task-expanded-container'>
+    stage.querySelector('.drop-target').innerHTML += taskHTML(numberOfTasks, taskNameInput.value, 'Click here to add a description...')
+}
+function taskHTML(position, taskName, description, taskId = '', descriptionIndicator = '') {
+    console.log(descriptionIndicator)
+    return `
+    <div class='task task-hover' id=${taskId} position=${position} draggable='true' ondragstart='drag(event)'>
+        <div class='task-text'>${taskName}</div>
+        <div class='hidden indicators'>
+            ${descriptionIndicator}
+        </div>
+        <div class='hidden task-expanded-container'>
             <div class='expanded-task-text'>
-                <div class='task-name'>${taskNameInput.value}</div>
+                <div class='task-name'>${taskName}</div>
                 <textarea class='hidden rename-task'></textarea>
             </div>
-            <div class='description-title'>Description:</div>
-            <div class='task-description' maxlength="255">Click here to add a description...</div>
+                <div class='description-title'>Description:</div>
+            <div class='task-description' maxlength="255">${description}</div>
             <form class='hidden task-description-form'>
                 <textarea class='task-description-input' type='text'  placeholder='Add a description...'></textarea>
-                <button class='task-description-submit'>Submit</button>
+                <button class='task-description-submit'>Add description</button>
                 <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
             </form> 
             <div class='task-description-spacer'></div>
             <div class='colour-container'>
                 <div class="colour-title">Colour: </div>
-                <div class='task-colour'></div>
+                <div class='task-colour-container'>
+                    <div class='task-colour'>No colour selected</div>
+                    <div class='hidden task-colour-list'>
+                        <div class='task-colour-select red'></div>
+                        <div class='task-colour-select orange'></div>
+                        <div class='task-colour-select yellow'></div>
+                        <div class='task-colour-select green'></div>
+                        <div class='task-colour-select blue'></div>
+                        <div class='task-colour-select purple'></div>
+                    </div>
+                </div>
             </div>
-        </div>`
+            <div class='delete-task-container'>
+                <div class='delete-task'><i class="trash-svg-2 fa-solid fa-trash"></i></div>
+            </div>
+        </div>
+    </div>`
 }
 
 // updating stages
@@ -273,7 +294,7 @@ if (token) {
             const initialTitleValue = title.textContent
 
             // Render all stages
-            data.data.stages.forEach(stage => {
+            data.data.stages.sort((a, b) => a.position - b.position).forEach(stage => {
                 document.querySelector('.container-container').innerHTML += `
                 <div class='stage' id="Stage ${stage.id}" position="${stage.position}">
                     <form class='name-and-delete'>
@@ -282,7 +303,7 @@ if (token) {
                         <i class="more-options fa-solid fa-ellipsis-vertical">
                             <div class='move-left hidden' type='submit'><i class="fa-solid fa-arrow-left"></i></div>
                             <div class='move-right hidden' type='submit'><i class="fa-solid fa-arrow-right"></i></div>
-                            <div class='delete-stage hidden' type='submit'><i class="fa-solid fa-trash"></i></div>
+                            <div class='delete-stage hidden' type='submit'><i class="trash-svg-1 fa-solid fa-trash"></i></div>
                         </i>
                     </form>
                     <div class='drop-target'></div>
@@ -300,61 +321,29 @@ if (token) {
                 
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
-                    let description = task.description
-                    let textareaDescription = description
                     let descriptionIndicator = "<i class='description-indicator fa-solid fa-bars'></i>"
-                    if (!description) {
+                    let description = task.description
+                    if (task.description === null) {
                         description = 'Click here to add a description...'
-                        textareaDescription = ''
                         descriptionIndicator = ''
                     }
-                    stageElement.querySelector('.drop-target').innerHTML += `
-                        <div class='task task-hover' id=${task.id} position=${task.position} draggable='true' ondragstart='drag(event)'>
-                            <div class='task-text'>${task.name}</div>
-                            <div class='indicators'>
-                                ${descriptionIndicator}
-                            </div>
-                            <div class='hidden task-expanded-container'>
-                                <div class='expanded-task-text'>
-                                    <div class='task-name'>${task.name}</div>
-                                    <textarea class='hidden rename-task'></textarea>
-                                </div>
-                                    <div class='description-title'>Description:</div>
-                                <div class='task-description' maxlength="255">${description}</div>
-                                <form class='hidden task-description-form'>
-                                    <textarea class='task-description-input' type='text'  placeholder='Add a description...'>${textareaDescription}</textarea>
-                                    <button class='task-description-submit'>Add task</button>
-                                    <button class='close-description-input'><i class="fa-solid fa-xmark"></i></button>
-                                </form> 
-                                <div class='task-description-spacer'></div>
-                                <div class='colour-container'>
-                                    <div class="colour-title">Colour: </div>
-                                    <div class='task-colour-container'>
-                                        <div class='task-colour'></div>
-                                        <div class='hidden task-colour-list'>
-                                            <div class='task-colour-select red'></div>
-                                            <div class='task-colour-select orange'></div>
-                                            <div class='task-colour-select yellow'></div>
-                                            <div class='task-colour-select green'></div>
-                                            <div class='task-colour-select blue'></div>
-                                            <div class='task-colour-select purple'></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class='delete-task-container'>
-                                    <div class='delete-task'><i class="trash-svg-2 fa-solid fa-trash"></i></div>
-                                </div>
-                            </div>
-                        </div>`
+                    stageElement.querySelector('.drop-target').innerHTML += taskHTML(task.position, task.name, description, task.id, descriptionIndicator)
 
                     const taskSelector = document.getElementById(task.id)
                     if (task.colour) {
+                        console.log(task.colour)
                         taskSelector.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                         taskSelector.querySelector('.' + task.colour).classList.add('darken')
                         taskSelector.querySelector('.task-colour').classList.add(task.colour)
-                        taskSelector.querySelector('.indicators').innerHTML += `<div class='colour-indicator ${task.colour}'></div>`
-                    } else {
-                        taskSelector.querySelector('.task-colour').textContent = 'No colour selected'
+                        taskSelector.querySelector('.indicators').classList.add(task.colour) 
+                        if (descriptionIndicator != '') {
+                            taskSelector.querySelector('.description-indicator').style.color = 'white'
+                        }
+                        taskSelector.querySelector('.task-colour').textContent = ''
+                        taskSelector.querySelector('.indicators').classList.remove('hidden')
+                    }
+                    if (descriptionIndicator != '') {
+                        taskSelector.querySelector('.indicators').classList.remove('hidden')
                     }
                 })
             })
@@ -526,6 +515,7 @@ if (token) {
                     const stage = taskNameInput.closest('.stage')
                     const numberOfTasks = stage.querySelector('.drop-target').childElementCount
                     if (event.key === 'Enter') {
+                        console.log('a')
                         displayNewTaskTemp(stage, taskNameInput, numberOfTasks)
                         sendTaskDataRequest(stage, taskNameInput, numberOfTasks)
                         stage.querySelector('.add-task-container').classList.remove('hidden')
@@ -710,7 +700,12 @@ if (token) {
 
                 // delete stage
                 if (event.target.classList.contains('delete-stage') || event.target.classList.contains('trash-svg-1')) {
+                    console.log('a')
                     deleteStage(event.target.closest('.stage'))
+                    const stagesArray = Array.prototype.slice.call(document.querySelector('.container-container').children).slice(0, -2)
+                    stagesArray.forEach(stage => {
+                        stage.setAttribute("position", stagesArray.indexOf(stage))
+                    })
                 }
 
                 // expand/contract new stage
@@ -825,12 +820,20 @@ if (token) {
                         if (descriptionInput != '') {
                             descriptionElement.textContent = descriptionInput
                             if (!descriptionIndicator) {
-                                descriptionElement.closest('.task').querySelector('.indicators').innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
+                                const indicators = descriptionElement.closest('.task').querySelector('.indicators')
+                                indicators.classList.remove('hidden')
+                                indicators.innerHTML += `<i class="description-indicator fa-solid fa-bars"></i>`
+                                if (indicators.getAttribute("class").length > 10) {
+                                    indicators.style.color = 'white'
+                                }
                             }
                         } else {
                             descriptionElement.textContent = 'Click here to add a description...'
                             if (descriptionIndicator) {
-                                task.querySelector('.description-indicator').remove() 
+                                if (task.querySelector('.indicators').getAttribute("class").length === 10) {
+                                    task.querySelector('.indicators').classList.add('hidden')
+                                    task.querySelector('.description-indicator').remove() 
+                                }
                             }
                         }
                         updateTask(event.target.closest('.task'), data)
@@ -853,6 +856,15 @@ if (token) {
                         if (originalColour.trim() != '') {
                             taskColourList.querySelector('.' + originalColour).classList.remove('darken')
                             taskColourList.querySelector('.check').remove()
+                            task.querySelector('.indicators').classList.remove(originalColour)
+                        } else {
+                            task.querySelector('.indicators').classList.remove('hidden')
+                        }
+
+                        if (task.querySelector('.description-indicator')) {
+                            task.querySelector('.indicators').style.color = "white"
+                        } else {
+                            task.querySelector('.indicators').style.color = "black"
                         }
 
                         taskColourElement.textContent = ''
@@ -861,12 +873,7 @@ if (token) {
                         taskColourList.querySelector('.' + newColour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                         taskColourElement.className = taskColourElement.className.slice(0, 11) + ' ' + newColour
                         
-                        if (!task.querySelector('.colour-indicator')) {
-                            task.querySelector('.indicators').innerHTML += `<div class='colour-indicator'></div>`
-                        } else {
-                            task.querySelector('.colour-indicator').classList.remove(originalColour)
-                        }
-                        task.querySelector('.colour-indicator').classList.add(newColour)
+                        task.querySelector('.indicators').classList.add(newColour)
 
                         const data = {
                             "colour": newColour,
