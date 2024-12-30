@@ -141,10 +141,20 @@ label {
     width: 96%;
 }
 
+.button-container {
+    /* Display */
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
 .basic-button {
     all: unset;
 
     /* Display */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 10px;
     width: 40%;
     height: 25px;
@@ -162,6 +172,22 @@ label {
 
 .basic-button:hover {
     background-color: rgb(163, 163, 240);
+    cursor: pointer;
+}
+
+.fake-details {
+    /* Display */
+    padding-top: 8px;
+
+    /* Text */
+    text-decoration: underline;
+    font-size: 8px;
+}
+
+.fake-details:hover {
+    /* Colour */
+    color: #8c948c;
+
     cursor: pointer;
 }
 
@@ -218,21 +244,24 @@ label {
     background-color: white;
 }
 
+
 .taskboard-txt-container {
     /* Display */
-    flex-grow: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-}
+    height: 44.7px;
+    padding-top: 8px;
 
-.taskboard-txt {
     /* Colour */
     color: #211A1D;
 
+    
+}
+
+.taskboard-txt {
+    height: unset;
     /* Text */
     text-align: center;
-    vertical-align: middle;
     font-weight: 600;
 }
 
@@ -265,6 +294,15 @@ label {
     /* Text */
     text-align: center;
     font-size: 80px;
+}
+
+.taskboard-updated {
+    /* Display */
+    margin-top: 8px;
+    font-size: 12px;
+
+    /* Colour */
+    color: #392c32;
 }
 
 .spinner-container {

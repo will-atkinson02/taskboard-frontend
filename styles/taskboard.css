@@ -1,6 +1,7 @@
 body {
     /* Display */
     margin: 0;
+    width: max-content;
 
     /* Colour */
     color: white;
@@ -15,10 +16,12 @@ body {
 header {
     /* Display */
     display: grid;
-    grid-template-columns: 768px 153.6px 102.4px;
+    grid-template-columns: 15fr 3fr 2fr;
+    min-width: 100vw;
     justify-items: center;
     align-items: center;
     border-bottom: 1px white solid;
+    box-sizing: border-box;
 
     /* Colour */
     color: white;
@@ -45,6 +48,10 @@ header {
 .header-link:hover {
     color: rgb(228, 158, 158);
     background-color: #392c32;
+}
+
+.new-taskboard {
+    cursor: pointer;
 }
 
 /* Section 1 */
@@ -112,16 +119,22 @@ header {
     height: 30px;
     border-radius: 10px;
     margin: 20px;
+    padding: 5px 0 5px 0;
 
     /* Colour */
     color: black;
     background-color: #CAD5CA;
+
+    /* Text */
+    font-weight: 600;
 }
 
 .new-stage-container:hover {
     /* Colour */
     color: black;
     background-color: rgb(159, 158, 158);
+
+    cursor: pointer;
 }
 
 i {
@@ -437,7 +450,7 @@ i {
 
     /* Colour */
     color: #211A1D;
-    background-color: #8c948c;
+    background-color: #adb7ad;
 } 
 
 .expanded-task-text {

@@ -1,3 +1,20 @@
+// taskboards
+function createNewTaskboardRequest(token, userJson) {
+    fetch("http://127.0.0.1:8000/api/taskboard", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(userJson)
+    })
+    .then(response => response.json())
+    .then(data => {
+            window.location.href = `http://127.0.0.1:5500/taskboard.html?id=${data.taskboard_id}`;
+    })
+    .catch(error => console.error("Error:", error))
+}
+
 //check element positions
 function isBefore(element1, element2) {
     return element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_FOLLOWING;
@@ -602,6 +619,12 @@ if (token) {
 
                     title.classList.remove('hidden')
                     titleBox.classList.add('hidden')
+                }
+
+                // new taskboard
+                if (event.target.closest('.new-taskboard')) {
+                    const userJson = {username: sessionStorage.getItem('username')}
+                    createNewTaskboardRequest(token, userJson)
                 }
 
                 // change stage name
