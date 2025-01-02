@@ -256,7 +256,7 @@ if (!token) {
                         <div class="taskboard-txt">${taskboard.name}</div>
                     </div>
                     <div class="taskboard-updated">
-                        <div><i>Last updated:</i></div>
+                        <div class='last-updated'><i>Last updated:</i></div>
                         <div>${taskboard.updated_at.slice(0, 10)}</div>
                         <div>${taskboard.updated_at.slice(11, 19)}</div>
                     </div>

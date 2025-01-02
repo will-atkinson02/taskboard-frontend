@@ -16,6 +16,7 @@ header {
     grid-template-columns: 870.4px 102.4px 51.2px;
     align-items: center;
     border-bottom: 1px white solid;
+    height: 63px;
 
     /* Colour */
     color: white;
@@ -54,7 +55,8 @@ header {
 
 .title {
     /* Display */
-    padding-left: 20px;
+    padding-left: 40px;
+    font-size: 20px;
 }
 
 h1 {
@@ -310,6 +312,14 @@ label {
 
     /* Colour */
     color: #57434c;
+}
+
+.last-updated {
+    /* Text */
+    font-size: 10px;
+
+    /* Colour */
+    color: #45353d;
 }
 
 .delete-taskboard-container {
