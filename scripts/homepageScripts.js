@@ -201,6 +201,22 @@ if (!token) {
         if (event.target === document.getElementById('new-taskboard')) {
             createNewTaskboardRequest(token, userJson)
         }
+
+        if (event.target.closest('.delete-taskboard')) {
+            event.preventDefault()
+
+            document.querySelector('body').innerHTML += `
+                <div class='delete-taskboard-popup'>
+                    <div class='delete-taskboard-modal'>
+                        <div>Delete Taskboard?</div>
+                        <div class='modal-buttons'>
+                            <div class='yes'>Yes</div>
+                            <div class='no'>No</div>
+                        </div>
+                        </div>
+                    </div>
+                </div>`
+        }
     })
 
     document.querySelector('body').innerHTML += `
@@ -226,7 +242,9 @@ if (!token) {
 
         document.querySelector('.taskboards-container').innerHTML += `
             <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
-                <div class="taskboard-txt">New <br /> Taskboard</div>    
+                <div class="taskboard-txt-container">
+                    <div class="taskboard-txt">New Taskboard</div>    
+                </div>    
                 <i class="big-plus fa-solid fa-plus"></i>
             </div>`
 
@@ -241,6 +259,11 @@ if (!token) {
                         <div><i>Last updated:</i></div>
                         <div>${taskboard.updated_at.slice(0, 10)}</div>
                         <div>${taskboard.updated_at.slice(11, 19)}</div>
+                    </div>
+                    <div class='delete-taskboard-container'>
+                        <div class='delete-taskboard'>
+                            <i class="trash-svg-2 fa-solid fa-trash"></i>
+                        </div>
                     </div>
                 </a>
             </div>`
