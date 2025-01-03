@@ -193,6 +193,23 @@ label {
     cursor: pointer;
 }
 
+.sort-container {
+    /* Display */
+    display: flex;
+    flex-direction: row;
+    margin: 10px 0px 10px 70px;
+
+    /* Colour */
+    color: #211A1D;
+
+    /* Text */
+    font-size: 14px;
+}
+
+select {
+    margin-left: 10px;
+}
+
 .taskboards-container {
     /* Display */
     display: grid;
@@ -384,6 +401,10 @@ label {
     color: #392c32;
 }
 
+.modal-text {
+    text-align: center;
+}
+
 .modal-buttons {
     /* Diplay */
     display: flex;
@@ -393,32 +414,12 @@ label {
     margin-top: 25px;
 }
 
-.yes {
+.delete {
     /* Diplay */
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 25px;
-    border-radius: 8px;
-
-    /* Colour */
-    background-color: rgb(102, 102, 252);
-    color: white;
-}
-.yes:hover {
-    /* Colour */
-    background-color: rgb(50, 50, 157);
-
-    cursor: pointer;
-}
-
-.no {
-/* Diplay */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 40px;
+    width: 55px;
     height: 25px;
     border-radius: 8px;
 
@@ -426,9 +427,32 @@ label {
     background-color: rgb(253, 88, 88);
     color: white;
 }
-.no:hover {
+.delete:hover {
     /* Colour */
     background-color: rgb(243, 38, 38);
+
+    cursor: pointer;
+}
+
+.back {
+/* Diplay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 99px;
+    border: #211A1D solid 1px;
+
+    /* Colour */
+    color: black;
+
+    /* Text */
+    font-size: 18px;
+}
+.back:hover {
+    /* Colour */
+    background-color: #8c948c;
 
     cursor: pointer;
 }

@@ -53,6 +53,72 @@ function createNewTaskboardRequest(token, userJson) {
     .catch(error => console.error("Error:", error))
 }
 
+function createDropDownNodes() {
+    const dropDownNodes = []
+
+    // dropdown text
+    const text = document.createElement('div')
+    text.appendChild(document.createTextNode("Sort by: "))
+    
+    dropDownNodes.push(text)
+
+    // dropdown element
+    const dropDown = document.createElement('select')
+
+    const alphabetical  = document.createElement('option')
+    const reverseAlphabetical = document.createElement('option')
+    const newest = document.createElement('option')
+    const oldest = document.createElement('option')
+
+    alphabetical.appendChild(document.createTextNode("A to Z"))
+    reverseAlphabetical.appendChild(document.createTextNode("Z to A"))
+    newest.appendChild(document.createTextNode("Most recent"))
+    oldest.appendChild(document.createTextNode("Least recent"))
+
+    dropDown.appendChild(newest)
+    dropDown.appendChild(oldest)
+    dropDown.appendChild(alphabetical)
+    dropDown.appendChild(reverseAlphabetical)
+
+    dropDownNodes.push(dropDown)
+
+    return dropDownNodes
+}
+function sortTaskboards(parent, sortBy) {
+    let taskboardElements = Array.from(parent.children)
+    taskboardElements.shift()
+
+    switch(sortBy) {
+        case 'Most recent':
+            taskboardElements.sort((a, b) => {
+                const dateA = new Date(getDateValue(a))
+                const dateB = new Date(getDateValue(b))
+                return dateA - dateB
+            })
+            break
+        case 'Least recent':
+            taskboardElements.sort((a, b) => {
+                const dateA = new Date(getDateValue(a))
+                const dateB = new Date(getDateValue(b))
+                return dateB - dateA
+            });
+            break
+        case 'A to Z':
+            taskboardElements.sort((a, b) => {
+                return a.textContent.localeCompare(b.textContent);
+            });
+            break
+        case 'Z to A':
+            taskboardElements.sort((a, b) => {
+                return b.textContent.localeCompare(a.textContent);
+            });
+    }
+    return taskboardElements
+}
+function getDateValue(taskboardElement) {
+    return taskboardElement.querySelector('.taskboard-updated')[1].textContent + ' ' + taskboardElement.querySelector('.taskboard-updated')[2].textContent
+}
+
 const token = sessionStorage.getItem('auth_token')
 
 if (!token) {
@@ -165,17 +231,18 @@ if (!token) {
         document.getElementById('register-password').value = userData[2]
     })
 } else if (token) {
+    const userJson = {username: sessionStorage.getItem('username')}
+    let taskboardId = null
+
     document.querySelector('header').innerHTML += `
     <button class='header-link'>
         <div class='logout-text'>Logout</div>
         <i class='padding-lol fa-solid fa-right-from-bracket'></i>
     </button>
     <span></span>`
-
     
-    const userJson = {username: sessionStorage.getItem('username')}
 
-    window.addEventListener('click', (event) => {  
+    window.addEventListener('click', (event) => {
         // Logout button functionality
         if (event.target === document.querySelector('.header-link') ||
             event.target === document.querySelector('i') ||
@@ -198,24 +265,52 @@ if (!token) {
         }
 
         // New Taskboard button functionality
-        if (event.target === document.getElementById('new-taskboard')) {
+        if (event.target.closest('#new-taskboard')) {
             createNewTaskboardRequest(token, userJson)
         }
 
         if (event.target.closest('.delete-taskboard')) {
             event.preventDefault()
+            
+            taskboardId = event.target.closest('.taskboard').id
+            const taskboardName = document.getElementById(taskboardId).querySelector('.taskboard-txt').textContent
 
             document.querySelector('body').innerHTML += `
                 <div class='delete-taskboard-popup'>
                     <div class='delete-taskboard-modal'>
-                        <div>Delete Taskboard?</div>
+                        <div class='modal-text'>Delete Taskboard <br>${taskboardName}?</div>
                         <div class='modal-buttons'>
-                            <div class='yes'>Yes</div>
-                            <div class='no'>No</div>
+                            <div class='delete'>Delete</div>
+                            <div class='back'>
+                                <i class="fa-solid fa-xmark"></i>
+                            </div>
                         </div>
                         </div>
                     </div>
                 </div>`
+        }
+
+        if (event.target.classList.contains('delete')) {
+            const url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
+            fetch(url, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+            })
+            .catch(error => console.error("Error:", error))
+
+            document.querySelector('.delete-taskboard-popup').remove()
+            document.getElementById(taskboardId).remove()
+            taskboardId = null
+        } else if (event.target.closest('.back') || event.target.classList.contains('delete-taskboard-popup')) {
+            document.querySelector('.delete-taskboard-popup').remove()
+            taskboardId = null
         }
     })
 
@@ -225,7 +320,8 @@ if (!token) {
     </div>
     <div class="spinner-container">
         <div class="spinner"></div>
-        </div>
+    </div>
+    <div class="sort-container"></div>
     <div class="taskboards-container"></div>`
 
     const getUserEndpoint = "http://127.0.0.1:8000/api/user/" + sessionStorage.getItem('username')
@@ -239,8 +335,13 @@ if (!token) {
     .then(response => response.json())
     .then(data => {
         document.querySelector('.spinner-container').remove()
+        const taskboardsContainer = document.querySelector('.taskboards-container')
 
-        document.querySelector('.taskboards-container').innerHTML += `
+        createDropDownNodes().forEach(element => {
+            document.querySelector('.sort-container').appendChild(element)
+        })
+
+        taskboardsContainer.innerHTML += `
             <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
                 <div class="taskboard-txt-container">
                     <div class="taskboard-txt">New Taskboard</div>    
@@ -250,7 +351,7 @@ if (!token) {
 
         data.data.taskboards.forEach(taskboard => {
             document.querySelector('.taskboards-container').innerHTML += `
-            <div class="taskboard">
+            <div class="taskboard" id="${taskboard.id}">
                 <a class="taskboard-link" href="http://127.0.0.1:5500/taskboard.html?id=${taskboard.id}">
                     <div class="taskboard-txt-container">
                         <div class="taskboard-txt">${taskboard.name}</div>
@@ -267,12 +368,21 @@ if (!token) {
                     </div>
                 </a>
             </div>`
+
+            
+        })
+
+        document.querySelector('select').addEventListener('change', (event) => {
+            const sortTaskboards = sortTaskboards(taskboardsContainer, event.target.value)
+            console.log(sortTaskboards)
+            taskboardsContainer.innerHTML = ''
+            sortTaskboards.forEach(taskboard => taskboardsContainer.appendChild(taskboard))
         })
 
         // New Taskboard button functionality re-added
         document.getElementById('new-taskboard').addEventListener('click', () => {
             createNewTaskboardRequest(token, userJson)
-        })  
+        })
     })
     .catch(error => console.error("Error:", error))
 }
