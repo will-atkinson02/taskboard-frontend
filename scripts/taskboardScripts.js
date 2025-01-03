@@ -8,11 +8,11 @@ function createNewTaskboardRequest(token, userJson) {
         },
         body: JSON.stringify(userJson)
     })
-    .then(response => response.json())
-    .then(data => {
+        .then(response => response.json())
+        .then(data => {
             window.location.href = `http://127.0.0.1:5500/taskboard.html?id=${data.taskboard_id}`;
-    })
-    .catch(error => console.error("Error:", error))
+        })
+        .catch(error => console.error("Error:", error))
 }
 
 //check element positions
@@ -126,11 +126,11 @@ function updateTask(task, data) {
         headers: HEADERS,
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Response from server:", data)
-    })
-    .catch(error => console.error("Error:", error))
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data)
+        })
+        .catch(error => console.error("Error:", error))
 }
 function sendTaskDataRequest(stage, taskNameInput, numberOfTasks) {
     const jsonData = {
@@ -145,22 +145,22 @@ function sendTaskDataRequest(stage, taskNameInput, numberOfTasks) {
             headers: HEADERS,
             body: JSON.stringify(jsonData)
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Response from server:", data)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response from server:", data)
 
-            document.querySelectorAll('.task-text').forEach(taskText => {
-                if (taskText.textContent === jsonData.name) {
-                    taskText.closest('.stage').querySelector('.task-name-input').value = ''
-                    taskText.closest('.task').setAttribute('id', data.taskId)
-                    taskText.closest('.task').setAttribute('draggable', 'true')
-                    document.querySelectorAll('.task').forEach(task => {
-                        addtaskDraggingEL(task)
-                    })
-                }
+                document.querySelectorAll('.task-text').forEach(taskText => {
+                    if (taskText.textContent === jsonData.name) {
+                        taskText.closest('.stage').querySelector('.task-name-input').value = ''
+                        taskText.closest('.task').setAttribute('id', data.taskId)
+                        taskText.closest('.task').setAttribute('draggable', 'true')
+                        document.querySelectorAll('.task').forEach(task => {
+                            addtaskDraggingEL(task)
+                        })
+                    }
+                })
             })
-        })
-        .catch(error => console.error("Error:", error))
+            .catch(error => console.error("Error:", error))
     }
 }
 function displayNewTaskTemp(stage, taskNameInput, numberOfTasks) {
@@ -217,9 +217,9 @@ function updateStage(stage, data) {
         headers: HEADERS,
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => console.log("Response from server:", data))
-    .catch(error => console.error("Error:", error))
+        .then(response => response.json())
+        .then(data => console.log("Response from server:", data))
+        .catch(error => console.error("Error:", error))
 }
 function deleteStage(stage) {
     const stageId = parseInt(stage.id.slice(6))
@@ -229,9 +229,9 @@ function deleteStage(stage) {
         method: "DELETE",
         headers: HEADERS
     })
-    .then(response => response.json())
-    .then(data => console.log("Response from server:", data))
-    .catch(error => console.error("Error:", error))
+        .then(response => response.json())
+        .then(data => console.log("Response from server:", data))
+        .catch(error => console.error("Error:", error))
 }
 function addUpdateStageNameEL(stage) {
     stage.addEventListener('submit', (event) => {
@@ -257,11 +257,11 @@ function changeTitleRequest(taskboardId, token, jsonData) {
         headers: HEADERS,
         body: JSON.stringify(jsonData)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Response from server:", data)
-    })
-    .catch(error => console.error("Error:", error))
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response from server:", data)
+        })
+        .catch(error => console.error("Error:", error))
 }
 
 //loading spinner
@@ -297,7 +297,7 @@ if (token) {
     fetch(taskboardUrl, {
         method: "GET",
         headers: HEADERS
-        })
+    })
         .then(response => response.json())
         .then(data => {
             document.querySelector('.spinner-container').remove()
@@ -335,7 +335,7 @@ if (token) {
                 </div>`
                 const stageElement = document.getElementById("Stage " + stage.id)
                 onEnterStage(document.getElementById("Stage " + stage.id))
-                
+
                 // Render all tasks in order
                 stage.tasks.sort((a, b) => a.position - b.position).forEach(task => {
                     let descriptionIndicator = "<i class='description-indicator fa-solid fa-bars'></i>"
@@ -352,7 +352,7 @@ if (token) {
                         taskSelector.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                         taskSelector.querySelector('.' + task.colour).classList.add('darken')
                         taskSelector.querySelector('.task-colour').classList.add(task.colour)
-                        taskSelector.querySelector('.indicators').classList.add(task.colour) 
+                        taskSelector.querySelector('.indicators').classList.add(task.colour)
                         if (descriptionIndicator != '') {
                             taskSelector.querySelector('.description-indicator').style.color = 'white'
                         }
@@ -391,7 +391,7 @@ if (token) {
                 } else {
                     title.textContent = titleBox.value
                     if (event.data === null) {
-                        let charLength = (titleBox.getBoundingClientRect().width - 40)/titleBox.value.length
+                        let charLength = (titleBox.getBoundingClientRect().width - 40) / titleBox.value.length
                         title.style.width = `${titleWidth - charLength}px`
                         title.classList.remove('hidden')
                         titleWidth = title.getBoundingClientRect().width
@@ -436,18 +436,18 @@ if (token) {
                         headers: HEADERS,
                         body: JSON.stringify(jsonData)
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Response from server:", data)
-                        const stageContainer = document.querySelector('.container-container')
-                        const allStages = stageContainer.children
-                        const newStage = allStages[allStages.length - 3]
-                        newStage.setAttribute('id', 'Stage ' + data.stageId)
-                        document.querySelector('.stage-name-input').value = ''
-                        onEnterStage(newStage)
-                        addUpdateStageNameEL(newStage)
-                    })
-                    .catch(error => console.error("Error:", error))
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data)
+                            const stageContainer = document.querySelector('.container-container')
+                            const allStages = stageContainer.children
+                            const newStage = allStages[allStages.length - 3]
+                            newStage.setAttribute('id', 'Stage ' + data.stageId)
+                            document.querySelector('.stage-name-input').value = ''
+                            onEnterStage(newStage)
+                            addUpdateStageNameEL(newStage)
+                        })
+                        .catch(error => console.error("Error:", error))
                 }
 
                 const inputValue = document.querySelector('.stage-name-input').value
@@ -519,7 +519,7 @@ if (token) {
                             let data = {
                                 "position": i,
                                 "stage_id": parseInt(stage.id.slice(6))
-                            }  
+                            }
                             updateTask(dropTargetArray[i], data)
                         }
                     }
@@ -578,7 +578,7 @@ if (token) {
                 descInput.addEventListener("keyup", (event) => {
                     if (event.key.length < 2 || event.key === 'Backspace' || event.key === 'Delete') {
                         descriptionElement.textContent = descInput.value
-                    } 
+                    }
                     descriptionElement.classList.remove('hidden')
                     while (descriptionElement.clientHeight >= 182) {
                         descInput.value = descInput.value.slice(0, -1)
@@ -608,12 +608,12 @@ if (token) {
                     title.classList.add('hidden')
                     titleBox.classList.remove('hidden')
                     titleBox.focus()
-                    
+
                 } else if (event.target != title && event.target != titleBox) {
                     if (initialTitleValue != titleBox.value) {
                         let newTitle = titleBox.value
                         title.textContent = newTitle
-                        let jsonData = {"name": newTitle}
+                        let jsonData = { "name": newTitle }
                         changeTitleRequest(taskboardId, token, jsonData)
                     }
 
@@ -623,7 +623,7 @@ if (token) {
 
                 // new taskboard
                 if (event.target.closest('.new-taskboard')) {
-                    const userJson = {username: sessionStorage.getItem('username')}
+                    const userJson = { username: sessionStorage.getItem('username') }
                     createNewTaskboardRequest(token, userJson)
                 }
 
@@ -660,14 +660,14 @@ if (token) {
                         optionsPressed.querySelector('.move-right').classList.add('hidden')
                         optionsPressed.querySelector('.move-left').classList.add('hidden')
                         optionsPressed = null
-                    } 
+                    }
                     optionsPressed = event.target.closest('.stage')
                     optionsPressed.querySelector('.delete-stage').classList.remove('hidden')
                     optionsPressed.querySelector('.move-right').classList.remove('hidden')
                     optionsPressed.querySelector('.move-left').classList.remove('hidden')
-                } else if (optionsPressed && (!event.target.classList.contains('delete-stage') || 
-                           !event.target.classList.contains('move-right') ||
-                           !event.target.classList.contains('move-left'))) {
+                } else if (optionsPressed && (!event.target.classList.contains('delete-stage') ||
+                    !event.target.classList.contains('move-right') ||
+                    !event.target.classList.contains('move-left'))) {
                     optionsPressed.querySelector('.delete-stage').classList.add('hidden')
                     optionsPressed.querySelector('.move-right').classList.add('hidden')
                     optionsPressed.querySelector('.move-left').classList.add('hidden')
@@ -682,7 +682,7 @@ if (token) {
                     if (stagePosition < container.childElementCount - 2) {
                         const nextStage = stage.nextElementSibling
                         const nextStagePosition = parseInt(nextStage.getAttribute("position"))
-                        
+
                         container.insertBefore(nextStage, stage)
                         stage.setAttribute("position", stagePosition + 1)
                         nextStage.setAttribute("position", nextStagePosition - 1)
@@ -705,11 +705,11 @@ if (token) {
                     if (stagePosition > 0) {
                         const previousStage = stage.previousElementSibling
                         const previousStagePosition = parseInt(previousStage.getAttribute("position"))
-                        
+
                         container.insertBefore(stage, previousStage)
                         stage.setAttribute("position", stagePosition - 1)
                         previousStage.setAttribute("position", previousStagePosition + 1)
-                        
+
                         const dataA = {
                             "position": stagePosition - 1
                         }
@@ -779,7 +779,7 @@ if (token) {
                         task.setAttribute('draggable', true)
                         task.classList.add('task-hover')
                     }
-                } 
+                }
 
                 // rename task
                 if (event.target.classList.contains('task-name')) {
@@ -803,8 +803,8 @@ if (token) {
                             "name": renameTask.value
                         }
                         updateTask(task, data)
-                        taskTitle.textContent = renameTask.value 
-                        task.querySelector('.task-text').textContent = renameTask.value 
+                        taskTitle.textContent = renameTask.value
+                        task.querySelector('.task-text').textContent = renameTask.value
                         taskTitle.classList.remove('hidden')
                         renameTask.classList.add('hidden')
                         taskTitle = null
@@ -855,12 +855,12 @@ if (token) {
                             if (descriptionIndicator) {
                                 if (task.querySelector('.indicators').getAttribute("class").length === 10) {
                                     task.querySelector('.indicators').classList.add('hidden')
-                                    task.querySelector('.description-indicator').remove() 
+                                    task.querySelector('.description-indicator').remove()
                                 }
                             }
                         }
                         updateTask(event.target.closest('.task'), data)
-                    } 
+                    }
                 }
 
                 // task colour
@@ -875,7 +875,7 @@ if (token) {
                         const taskColourElement = event.target.closest('.task-colour-container').querySelector('.task-colour')
                         const originalColour = taskColourElement.className.slice(12)
                         const newColour = event.target.className.slice(19)
-                        
+
                         if (originalColour.trim() != '') {
                             taskColourList.querySelector('.' + originalColour).classList.remove('darken')
                             taskColourList.querySelector('.check').remove()
@@ -895,14 +895,14 @@ if (token) {
                         taskColourList.querySelector('.' + newColour).classList.add('darken')
                         taskColourList.querySelector('.' + newColour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                         taskColourElement.className = taskColourElement.className.slice(0, 11) + ' ' + newColour
-                        
+
                         task.querySelector('.indicators').classList.add(newColour)
 
                         const data = {
                             "colour": newColour,
-                        }  
+                        }
                         updateTask(task, data)
-                        
+
                     }
                     taskColourList.classList.add('hidden')
                     taskColourList = null
@@ -917,9 +917,9 @@ if (token) {
                         method: "DELETE",
                         headers: HEADERS
                     })
-                    .then(response => response.json())
-                    .then(data => console.log("Response from server:", data))
-                    .catch(error => console.error("Error:", error))
+                        .then(response => response.json())
+                        .then(data => console.log("Response from server:", data))
+                        .catch(error => console.error("Error:", error))
                 }
 
                 // expand/contract add tasks
@@ -944,7 +944,7 @@ if (token) {
                         stage.querySelector('.add-task-container').classList.remove('hidden')
                         stage.querySelector('.add-task-expanded-container').classList.add('hidden')
                     })
-                }   
+                }
             })
         }).catch(error => console.error('Error:', error))
 }

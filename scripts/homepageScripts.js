@@ -32,7 +32,7 @@ function generateRandomUserData() {
     const username = generateRandomUsername(characters);
     const email = generateRandomEmail(username);
     const password = generateRandomPassword(characters);
-    
+
     // Return them in an array
     return [username, email, password];
 }
@@ -46,11 +46,11 @@ function createNewTaskboardRequest(token, userJson) {
         },
         body: JSON.stringify(userJson)
     })
-    .then(response => response.json())
-    .then(data => {
+        .then(response => response.json())
+        .then(data => {
             window.location.href = `http://127.0.0.1:5500/taskboard.html?id=${data.taskboard_id}`;
-    })
-    .catch(error => console.error("Error:", error))
+        })
+        .catch(error => console.error("Error:", error))
 }
 
 function createDropDownNodes() {
@@ -59,13 +59,13 @@ function createDropDownNodes() {
     // dropdown text
     const text = document.createElement('div')
     text.appendChild(document.createTextNode("Sort by: "))
-    
+
     dropDownNodes.push(text)
 
     // dropdown element
     const dropDown = document.createElement('select')
 
-    const alphabetical  = document.createElement('option')
+    const alphabetical = document.createElement('option')
     const reverseAlphabetical = document.createElement('option')
     const newest = document.createElement('option')
     const oldest = document.createElement('option')
@@ -88,19 +88,19 @@ function sortTaskboards(parent, sortBy) {
     let taskboardElements = Array.from(parent.children)
     taskboardElements.shift()
 
-    switch(sortBy) {
+    switch (sortBy) {
         case 'Most recent':
             taskboardElements.sort((a, b) => {
                 const dateA = new Date(getDateValue(a))
                 const dateB = new Date(getDateValue(b))
-                return dateA - dateB
+                return dateB - dateA
             })
             break
         case 'Least recent':
             taskboardElements.sort((a, b) => {
                 const dateA = new Date(getDateValue(a))
                 const dateB = new Date(getDateValue(b))
-                return dateB - dateA
+                return dateA - dateB
             });
             break
         case 'A to Z':
@@ -116,7 +116,26 @@ function sortTaskboards(parent, sortBy) {
     return taskboardElements
 }
 function getDateValue(taskboardElement) {
-    return taskboardElement.querySelector('.taskboard-updated')[1].textContent + ' ' + taskboardElement.querySelector('.taskboard-updated')[2].textContent
+    return taskboardElement.querySelector('.taskboard-updated').children[1].textContent + ' ' + taskboardElement.querySelector('.taskboard-updated').children[2].textContent
+}
+
+function addNewTaskboardHTML(taskboardsContainer) {
+    taskboardsContainer.innerHTML += `
+    <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
+        <div class="taskboard-txt-container">
+            <div class="taskboard-txt">New Taskboard</div>    
+        </div>    
+        <i class="big-plus fa-solid fa-plus"></i>
+    </div>`
+}
+
+function addSelectionEL(taskboardsContainer) {
+    document.querySelector('select').addEventListener('change', (event) => {
+        const sortTaskboardsArray = sortTaskboards(taskboardsContainer, event.target.value)
+        taskboardsContainer.innerHTML = ''
+        addNewTaskboardHTML(taskboardsContainer)
+        sortTaskboardsArray.forEach(taskboard => taskboardsContainer.appendChild(taskboard))
+    })
 }
 
 const token = sessionStorage.getItem('auth_token')
@@ -158,7 +177,7 @@ if (!token) {
 
         let form = event.target
         let formData = new FormData(form)
-        let jsonData = Object.fromEntries(formData.entries())   
+        let jsonData = Object.fromEntries(formData.entries())
 
         fetch("http://127.0.0.1:8000/api/login", {
             method: "POST",
@@ -167,22 +186,22 @@ if (!token) {
             },
             body: JSON.stringify(jsonData)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success === true ) {
-                sessionStorage.setItem('username', jsonData.username)
-                sessionStorage.setItem('auth_token', data.token)
-                document.querySelector('.login-form-container').remove()
-                window.location.reload()
-            } else {
-                console.log('error!')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === true) {
+                    sessionStorage.setItem('username', jsonData.username)
+                    sessionStorage.setItem('auth_token', data.token)
+                    document.querySelector('.login-form-container').remove()
+                    window.location.reload()
+                } else {
+                    console.log('error!')
 
-                document.querySelectorAll('.basic-button').forEach(button => {
-                    button.removeAttribute('style')
-                })
-            }
-        })
-        .catch(error => console.error("Error:", error))
+                    document.querySelectorAll('.basic-button').forEach(button => {
+                        button.removeAttribute('style')
+                    })
+                }
+            })
+            .catch(error => console.error("Error:", error))
     })
 
     const registerForm = document.querySelector('.register-form')
@@ -196,8 +215,8 @@ if (!token) {
 
         let form = event.target
         let formData = new FormData(form)
-        let jsonData = Object.fromEntries(formData.entries())  
-        
+        let jsonData = Object.fromEntries(formData.entries())
+
         fetch("http://127.0.0.1:8000/api/register", {
             method: "POST",
             headers: {
@@ -205,22 +224,22 @@ if (!token) {
             },
             body: JSON.stringify(jsonData)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success === true ) {
-                sessionStorage.setItem('username', jsonData.username)
-                sessionStorage.setItem('auth_token', data.token)
-                document.querySelector('.login-form-container').remove()
-                window.location.reload()
-            } else {
-                console.log('error!')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === true) {
+                    sessionStorage.setItem('username', jsonData.username)
+                    sessionStorage.setItem('auth_token', data.token)
+                    document.querySelector('.login-form-container').remove()
+                    window.location.reload()
+                } else {
+                    console.log('error!')
 
-                document.querySelectorAll('.basic-button').forEach(button => {
-                    button.removeAttribute('style')
-                })
-            }
-        })
-        .catch(error => console.error("Error:", error))
+                    document.querySelectorAll('.basic-button').forEach(button => {
+                        button.removeAttribute('style')
+                    })
+                }
+            })
+            .catch(error => console.error("Error:", error))
     })
 
     document.querySelector('.fake-details').addEventListener('click', () => {
@@ -231,8 +250,9 @@ if (!token) {
         document.getElementById('register-password').value = userData[2]
     })
 } else if (token) {
-    const userJson = {username: sessionStorage.getItem('username')}
+    const userJson = { username: sessionStorage.getItem('username') }
     let taskboardId = null
+    let newTaskboardClicked = false
 
     document.querySelector('header').innerHTML += `
     <button class='header-link'>
@@ -240,79 +260,6 @@ if (!token) {
         <i class='padding-lol fa-solid fa-right-from-bracket'></i>
     </button>
     <span></span>`
-    
-
-    window.addEventListener('click', (event) => {
-        // Logout button functionality
-        if (event.target === document.querySelector('.header-link') ||
-            event.target === document.querySelector('i') ||
-            event.target === document.querySelector('.logout-text')) {
-            
-            fetch("http://127.0.0.1:8000/api/logout", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(userJson)
-            })
-            .then(response => response.json())
-            .then(data => {
-                sessionStorage.clear()
-                window.location.reload()
-            })
-            .catch(error => console.error("Error:", error))
-        }
-
-        // New Taskboard button functionality
-        if (event.target.closest('#new-taskboard')) {
-            createNewTaskboardRequest(token, userJson)
-        }
-
-        if (event.target.closest('.delete-taskboard')) {
-            event.preventDefault()
-            
-            taskboardId = event.target.closest('.taskboard').id
-            const taskboardName = document.getElementById(taskboardId).querySelector('.taskboard-txt').textContent
-
-            document.querySelector('body').innerHTML += `
-                <div class='delete-taskboard-popup'>
-                    <div class='delete-taskboard-modal'>
-                        <div class='modal-text'>Delete Taskboard <br>${taskboardName}?</div>
-                        <div class='modal-buttons'>
-                            <div class='delete'>Delete</div>
-                            <div class='back'>
-                                <i class="fa-solid fa-xmark"></i>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                </div>`
-        }
-
-        if (event.target.classList.contains('delete')) {
-            const url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
-            fetch(url, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-            })
-            .catch(error => console.error("Error:", error))
-
-            document.querySelector('.delete-taskboard-popup').remove()
-            document.getElementById(taskboardId).remove()
-            taskboardId = null
-        } else if (event.target.closest('.back') || event.target.classList.contains('delete-taskboard-popup')) {
-            document.querySelector('.delete-taskboard-popup').remove()
-            taskboardId = null
-        }
-    })
 
     document.querySelector('body').innerHTML += `
     <div class="h1-container">
@@ -332,25 +279,15 @@ if (!token) {
             "Authorization": `Bearer ${token}`
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        document.querySelector('.spinner-container').remove()
-        const taskboardsContainer = document.querySelector('.taskboards-container')
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('.spinner-container').remove()
+            const taskboardsContainer = document.querySelector('.taskboards-container')
 
-        createDropDownNodes().forEach(element => {
-            document.querySelector('.sort-container').appendChild(element)
-        })
+            addNewTaskboardHTML(taskboardsContainer)
 
-        taskboardsContainer.innerHTML += `
-            <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
-                <div class="taskboard-txt-container">
-                    <div class="taskboard-txt">New Taskboard</div>    
-                </div>    
-                <i class="big-plus fa-solid fa-plus"></i>
-            </div>`
-
-        data.data.taskboards.forEach(taskboard => {
-            document.querySelector('.taskboards-container').innerHTML += `
+            data.data.taskboards.forEach(taskboard => {
+                taskboardsContainer.innerHTML += `
             <div class="taskboard" id="${taskboard.id}">
                 <a class="taskboard-link" href="http://127.0.0.1:5500/taskboard.html?id=${taskboard.id}">
                     <div class="taskboard-txt-container">
@@ -368,21 +305,96 @@ if (!token) {
                     </div>
                 </a>
             </div>`
+            })
 
-            
+            createDropDownNodes().forEach(element => {
+                document.querySelector('.sort-container').appendChild(element)
+            })
+
+            addSelectionEL(taskboardsContainer)
         })
+        .catch(error => console.error("Error:", error))
 
-        document.querySelector('select').addEventListener('change', (event) => {
-            const sortTaskboards = sortTaskboards(taskboardsContainer, event.target.value)
-            console.log(sortTaskboards)
-            taskboardsContainer.innerHTML = ''
-            sortTaskboards.forEach(taskboard => taskboardsContainer.appendChild(taskboard))
-        })
+    window.addEventListener('click', (event) => {
+        // Logout button functionality
+        if (event.target === document.querySelector('.header-link') ||
+            event.target === document.querySelector('i') ||
+            event.target === document.querySelector('.logout-text')) {
 
-        // New Taskboard button functionality re-added
-        document.getElementById('new-taskboard').addEventListener('click', () => {
+            fetch("http://127.0.0.1:8000/api/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(userJson)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    sessionStorage.clear()
+                    window.location.reload()
+                })
+                .catch(error => console.error("Error:", error))
+        }
+
+        // New Taskboard button functionality
+        if (event.target.closest('#new-taskboard') && newTaskboardClicked === false) {
+            newTaskboardClicked = true
+            const elements = document.querySelectorAll('*')
+            elements.forEach(element => {
+                element.style.cursor = 'wait'
+            })
             createNewTaskboardRequest(token, userJson)
-        })
+        }
+
+        // delete taskboard first button
+        if (event.target.closest('.delete-taskboard')) {
+            event.preventDefault()
+
+            taskboardId = event.target.closest('.taskboard').id
+            const taskboardName = document.getElementById(taskboardId).querySelector('.taskboard-txt').textContent
+            const body = document.querySelector('body')
+            const popupHeight = body.clientHeight
+            body.innerHTML += `
+                <div class='delete-taskboard-popup' style="height:${popupHeight}px">
+                    <div class='delete-taskboard-modal'>
+                        <div class='modal-text'>Delete Taskboard <br>${taskboardName}?</div>
+                        <div class='modal-buttons'>
+                            <div class='delete'>Delete</div>
+                            <div class='back'>
+                                <i class="fa-solid fa-xmark"></i>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>`
+        }
+
+        // delete taskboard second button
+        const taskboardsContainer = document.querySelector('.taskboards-container')
+        if (event.target.classList.contains('delete')) {
+            const url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
+            fetch(url, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                })
+                .catch(error => console.error("Error:", error))
+
+            document.querySelector('.delete-taskboard-popup').remove()
+            document.getElementById(taskboardId).remove()
+            taskboardId = null
+            addSelectionEL(taskboardsContainer)
+        } else if (event.target.closest('.back') || event.target.classList.contains('delete-taskboard-popup')) {
+            document.querySelector('.delete-taskboard-popup').remove()
+            taskboardId = null
+            addSelectionEL(taskboardsContainer)
+        }
     })
-    .catch(error => console.error("Error:", error))
 }
