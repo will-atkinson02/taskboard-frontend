@@ -42,22 +42,6 @@ function generateRandomUserData() {
     return [username, email, password];
 }
 
-function createNewTaskboardRequest(token, userJson) {
-    fetch(apiURL + "taskboard", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(userJson)
-    })
-        .then(response => response.json())
-        .then(data => {
-            window.location.href = taskboardPageURL + `?id=${data.taskboard_id}`;
-        })
-        .catch(error => console.error("Error:", error))
-}
-
 function createDropDownNodes() {
     const dropDownNodes = []
 
@@ -168,13 +152,6 @@ function handleFormResponse(jsonData, data) {
     }
 }   
 
-function getFormData(event) {
-    const form = event.target
-    const formData = new FormData(form)
-    const jsonData = Object.fromEntries(formData.entries())
-    return jsonData
-}
-
 function handleFormSubmit(formType) {
     const form = document.querySelector('.' + formType + '-form')
     form.addEventListener('submit', (event) => {
@@ -185,35 +162,6 @@ function handleFormSubmit(formType) {
     })
 }
 
-function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
-    let options = {
-        method: METHOD,
-        headers: HEADERS,
-    }
-
-    if (BODY) {
-        options.body = JSON.stringify(BODY)
-    }
-
-    fetch(url, options)
-        .then(response => response.json())
-        .then(data => {
-            if (BODY) {
-                handleResponse(BODY, data)
-            } else {
-                handleResponse(data)
-            }
-        }) 
-        .then(error => (error) ? console.error("Error:", error) : null)
-}
-
-
-const apiURL = "http://127.0.0.1:8000/api/"
-const taskboardPageURL = "http://127.0.0.1:5500/taskboard.html"
-const token = sessionStorage.getItem('auth_token')
-
-let HEADERS = {"Content-Type": "application/json"}
-if (token) {HEADERS["Authorization"] = `Bearer ${token}`}
 
 if (!token) {
     document.querySelector('body').innerHTML += `
@@ -255,7 +203,6 @@ if (!token) {
     })
 } else if (token) {
     const userName = sessionStorage.getItem('username')
-    const userJson = { username: userName}
     let taskboardId = null
     let newTaskboardClicked = false
 
