@@ -20,8 +20,6 @@ function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
         options.body = JSON.stringify(BODY)
     }
 
-    console.log(options)
-
     fetch(url, options)
         .then(response => response.json())
         .then(data => {

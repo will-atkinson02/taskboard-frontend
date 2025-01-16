@@ -277,7 +277,6 @@ if (token) {
 
                 const taskSelector = document.getElementById(task.id)
                 if (task.colour) {
-                    console.log(task.colour)
                     taskSelector.querySelector('.' + task.colour).innerHTML += `<i class="check fa-solid fa-check"></i>`
                     taskSelector.querySelector('.' + task.colour).classList.add('darken')
                     taskSelector.querySelector('.task-colour').classList.add(task.colour)
@@ -364,7 +363,6 @@ if (token) {
                     document.querySelector('.stage-name-input').value = ''
                     onEnterStage(newStage)
                     addUpdateStageNameEL(newStage, HEADERS)
-                    console.log(data)
                 }, jsonData)
             }
 

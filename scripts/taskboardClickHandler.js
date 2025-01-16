@@ -315,7 +315,7 @@ window.addEventListener("click", (event) => {
     }
 
     // delete task
-    if (event.target.closest('.delete-task-container')) {
+    if (event.target.closest('.delete-task')) {
         const task = event.target.closest('.task')
         const url = apiURL + "task/" + task.id.toString()
         task.remove()
