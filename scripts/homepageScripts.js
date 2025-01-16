@@ -1,3 +1,8 @@
+// TODO: create a file for shared functions
+// -> global variables file?
+// -> work through taskboardScripts
+
+
 // Generate random username
 function generateRandomUsername(characters) {
     let username = '';
@@ -38,7 +43,7 @@ function generateRandomUserData() {
 }
 
 function createNewTaskboardRequest(token, userJson) {
-    fetch("http://127.0.0.1:8000/api/taskboard", {
+    fetch(apiURL + "taskboard", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -48,7 +53,7 @@ function createNewTaskboardRequest(token, userJson) {
     })
         .then(response => response.json())
         .then(data => {
-            window.location.href = `http://127.0.0.1:5500/taskboard.html?id=${data.taskboard_id}`;
+            window.location.href = taskboardPageURL + `?id=${data.taskboard_id}`;
         })
         .catch(error => console.error("Error:", error))
 }
@@ -138,7 +143,77 @@ function addSelectionEL(taskboardsContainer) {
     })
 }
 
+function disableButtons() {
+    document.querySelectorAll('.basic-button').forEach(button => {
+        button.style.backgroundColour = '#A3A3F0'
+        button.style.cursor = 'wait'
+    })
+}
+
+function enableButtons() {
+    document.querySelectorAll('.basic-button').forEach(button => {
+        button.removeAttribute('style')
+    })
+}
+
+function handleFormResponse(jsonData, data) {
+    if (data.success === true) {
+        sessionStorage.setItem('username', jsonData.username)
+        sessionStorage.setItem('auth_token', data.token)
+        document.querySelector('.login-form-container').remove()
+        window.location.reload()
+    } else {
+        console.log('error!')
+        enableButtons()
+    }
+}   
+
+function getFormData(event) {
+    const form = event.target
+    const formData = new FormData(form)
+    const jsonData = Object.fromEntries(formData.entries())
+    return jsonData
+}
+
+function handleFormSubmit(formType) {
+    const form = document.querySelector('.' + formType + '-form')
+    form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        disableButtons()
+        const url = apiURL + formType
+        apiRequest(url, "POST", HEADERS, handleFormResponse, getFormData(event)) 
+    })
+}
+
+function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
+    let options = {
+        method: METHOD,
+        headers: HEADERS,
+    }
+
+    if (BODY) {
+        options.body = JSON.stringify(BODY)
+    }
+
+    fetch(url, options)
+        .then(response => response.json())
+        .then(data => {
+            if (BODY) {
+                handleResponse(BODY, data)
+            } else {
+                handleResponse(data)
+            }
+        }) 
+        .then(error => (error) ? console.error("Error:", error) : null)
+}
+
+
+const apiURL = "http://127.0.0.1:8000/api/"
+const taskboardPageURL = "http://127.0.0.1:5500/taskboard.html"
 const token = sessionStorage.getItem('auth_token')
+
+let HEADERS = {"Content-Type": "application/json"}
+if (token) {HEADERS["Authorization"] = `Bearer ${token}`}
 
 if (!token) {
     document.querySelector('body').innerHTML += `
@@ -166,82 +241,11 @@ if (!token) {
         </form>
     </div>`
 
-    const loginForm = document.querySelector('.login-form')
-    loginForm.addEventListener('submit', (event) => {
-        event.preventDefault()
+    //handle login and register forms
+    handleFormSubmit("login")
+    handleFormSubmit("register")
 
-        document.querySelectorAll('.basic-button').forEach(button => {
-            button.style.background = '#A3A3F0'
-            button.style.cursor = 'wait'
-        })
-
-        let form = event.target
-        let formData = new FormData(form)
-        let jsonData = Object.fromEntries(formData.entries())
-
-        fetch("http://127.0.0.1:8000/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(jsonData)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success === true) {
-                    sessionStorage.setItem('username', jsonData.username)
-                    sessionStorage.setItem('auth_token', data.token)
-                    document.querySelector('.login-form-container').remove()
-                    window.location.reload()
-                } else {
-                    console.log('error!')
-
-                    document.querySelectorAll('.basic-button').forEach(button => {
-                        button.removeAttribute('style')
-                    })
-                }
-            })
-            .catch(error => console.error("Error:", error))
-    })
-
-    const registerForm = document.querySelector('.register-form')
-    registerForm.addEventListener('submit', (event) => {
-        event.preventDefault()
-
-        document.querySelectorAll('.basic-button').forEach(button => {
-            button.style.backgroundColour = '#A3A3F0'
-            button.style.cursor = 'wait'
-        })
-
-        let form = event.target
-        let formData = new FormData(form)
-        let jsonData = Object.fromEntries(formData.entries())
-
-        fetch("http://127.0.0.1:8000/api/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(jsonData)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success === true) {
-                    sessionStorage.setItem('username', jsonData.username)
-                    sessionStorage.setItem('auth_token', data.token)
-                    document.querySelector('.login-form-container').remove()
-                    window.location.reload()
-                } else {
-                    console.log('error!')
-
-                    document.querySelectorAll('.basic-button').forEach(button => {
-                        button.removeAttribute('style')
-                    })
-                }
-            })
-            .catch(error => console.error("Error:", error))
-    })
-
+    //generate fake details
     document.querySelector('.fake-details').addEventListener('click', () => {
         const userData = generateRandomUserData()
 
@@ -250,7 +254,8 @@ if (!token) {
         document.getElementById('register-password').value = userData[2]
     })
 } else if (token) {
-    const userJson = { username: sessionStorage.getItem('username') }
+    const userName = sessionStorage.getItem('username')
+    const userJson = { username: userName}
     let taskboardId = null
     let newTaskboardClicked = false
 
@@ -263,7 +268,7 @@ if (!token) {
 
     document.querySelector('body').innerHTML += `
     <div class="h1-container">
-        <h1>Welcome ${sessionStorage.getItem('username')} to your home page!<h1>
+        <h1>Welcome ${userName} to your home page!<h1>
     </div>
     <div class="spinner-container">
         <div class="spinner"></div>
@@ -271,40 +276,32 @@ if (!token) {
     <div class="sort-container"></div>
     <div class="taskboards-container"></div>`
 
-    const getUserEndpoint = "http://127.0.0.1:8000/api/user/" + sessionStorage.getItem('username')
-    fetch(getUserEndpoint, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            document.querySelector('.spinner-container').remove()
+    const url = apiURL + "user/" + userName
+    apiRequest(url, "GET", HEADERS, (data) => {
+        document.querySelector('.spinner-container').remove()
             const taskboardsContainer = document.querySelector('.taskboards-container')
 
             addNewTaskboardHTML(taskboardsContainer)
 
             data.data.taskboards.forEach(taskboard => {
                 taskboardsContainer.innerHTML += `
-            <div class="taskboard" id="${taskboard.id}">
-                <a class="taskboard-link" href="http://127.0.0.1:5500/taskboard.html?id=${taskboard.id}">
-                    <div class="taskboard-txt-container">
-                        <div class="taskboard-txt">${taskboard.name}</div>
-                    </div>
-                    <div class="taskboard-updated">
-                        <div class='last-updated'><i>Last updated:</i></div>
-                        <div>${taskboard.updated_at.slice(0, 10)}</div>
-                        <div>${taskboard.updated_at.slice(11, 19)}</div>
-                    </div>
-                    <div class='delete-taskboard-container'>
-                        <div class='delete-taskboard'>
-                            <i class="trash-svg-2 fa-solid fa-trash"></i>
-                        </div>
-                    </div>
-                </a>
-            </div>`
+                    <div class="taskboard" id="${taskboard.id}">
+                        <a class="taskboard-link" href="${taskboardPageURL}?id=${taskboard.id}">
+                            <div class="taskboard-txt-container">
+                                <div class="taskboard-txt">${taskboard.name}</div>
+                            </div>
+                            <div class="taskboard-updated">
+                                <div class='last-updated'><i>Last updated:</i></div>
+                                <div>${taskboard.updated_at.slice(0, 10)}</div>
+                                <div>${taskboard.updated_at.slice(11, 19)}</div>
+                            </div>
+                            <div class='delete-taskboard-container'>
+                                <div class='delete-taskboard'>
+                                    <i class="trash-svg-2 fa-solid fa-trash"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>`
             })
 
             createDropDownNodes().forEach(element => {
@@ -312,29 +309,20 @@ if (!token) {
             })
 
             addSelectionEL(taskboardsContainer)
-        })
-        .catch(error => console.error("Error:", error))
+    })
 
     window.addEventListener('click', (event) => {
         // Logout button functionality
         if (event.target === document.querySelector('.header-link') ||
             event.target === document.querySelector('i') ||
             event.target === document.querySelector('.logout-text')) {
-
-            fetch("http://127.0.0.1:8000/api/logout", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(userJson)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    sessionStorage.clear()
-                    window.location.reload()
-                })
-                .catch(error => console.error("Error:", error))
+            
+            const url = apiURL + "logout"
+            apiRequest(url, "POST", HEADERS, () => {
+                sessionStorage.clear()
+                window.location.reload()
+            }, userJson)
+            
         }
 
         // New Taskboard button functionality
@@ -373,19 +361,8 @@ if (!token) {
         // delete taskboard second button
         const taskboardsContainer = document.querySelector('.taskboards-container')
         if (event.target.classList.contains('delete')) {
-            const url = "http://127.0.0.1:8000/api/taskboard/" + taskboardId
-            fetch(url, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                })
-                .catch(error => console.error("Error:", error))
+            const url = apiURL + "taskboard/" + taskboardId
+            apiRequest(url, "DELETE", HEADERS, (data) => console.log(data))
 
             document.querySelector('.delete-taskboard-popup').remove()
             document.getElementById(taskboardId).remove()
