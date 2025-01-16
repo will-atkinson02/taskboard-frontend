@@ -279,7 +279,7 @@ if (!token) {
             elements.forEach(element => {
                 element.style.cursor = 'wait'
             })
-            createNewTaskboardRequest(token, userJson)
+            createNewTaskboardRequest(HEADERS, taskboardPageURL, userJson)
         }
 
         // delete taskboard first button

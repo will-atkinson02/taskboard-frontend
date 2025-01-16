@@ -108,7 +108,6 @@ function createTask(stage, taskNameInput, numberOfTasks, HEADERS) {
         "position": numberOfTasks,
         "stage_id": parseInt(stage.id.slice(6))
     }
-    console.log(HEADERS)
     const url = apiURL + "task"
     if (jsonData.name != '') {
         apiRequest(url, "POST", HEADERS, (data) => {
@@ -130,7 +129,7 @@ function updateTask(task, HEADERS, jsonData) {
     apiRequest(url, "PUT", HEADERS, (data) => console.log("Response from server:", data), jsonData)
     
 }
- displayNewTask(stage, taskNameInput, numberOfTasks) {
+function displayNewTask(stage, taskNameInput, numberOfTasks) {
     stage.querySelector('.drop-target').innerHTML += insertTaskElement(numberOfTasks, taskNameInput.value, 'Click here to add a description...')
 }
 function insertTaskElement(position, taskName, description, taskId = '', descriptionIndicator = '') {
@@ -223,11 +222,12 @@ let title = null
 let titleBox = null
 let initialTitleValue = null
 
+//get url id
+const urlParams = new URLSearchParams(window.location.search)
+const taskboardId = urlParams.get('id')
 
 if (token) {
-//get url for uri
-    const urlParams = new URLSearchParams(window.location.search)
-    const taskboardId = urlParams.get('id')
+    
     const taskboardURL = apiURL + 'taskboard/' + taskboardId.toString()
 
     apiRequest(taskboardURL, "GET", HEADERS, (data) => {
@@ -343,7 +343,7 @@ if (token) {
 
             event.preventDefault()
             if (initialTitleValue != titleBox.value) {
-                changeTitleRequest(taskboardId, token, getFormData(event))
+                changeTitleRequest(taskboardId, HEADERS, getFormData(event))
             }
         })
 
@@ -363,7 +363,8 @@ if (token) {
                     newStage.setAttribute('id', 'Stage ' + data.stageId)
                     document.querySelector('.stage-name-input').value = ''
                     onEnterStage(newStage)
-                    addUpdateStageNameEL(newStage)
+                    addUpdateStageNameEL(newStage, HEADERS)
+                    console.log(data)
                 }, jsonData)
             }
 
@@ -451,7 +452,6 @@ if (token) {
                 const numberOfTasks = stage.querySelector('.drop-target').childElementCount
                 if (event.key === 'Enter') {
                     displayNewTask(stage, taskNameInput, numberOfTasks)
-                    console.log(HEADERS)
                     createTask(stage, taskNameInput, numberOfTasks, HEADERS)
                     stage.querySelector('.add-task-container').classList.remove('hidden')
                     stage.querySelector('.add-task-expanded-container').classList.add('hidden')

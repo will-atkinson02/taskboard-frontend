@@ -2,13 +2,13 @@ const apiURL = "http://127.0.0.1:8000/api/"
 const taskboardPageURL = "http://127.0.0.1:5500/taskboard.html"
 
 const token = sessionStorage.getItem('auth_token')
+let userJson = null
 
 let HEADERS = {"Content-Type": "application/json"}
 if (token) {
     HEADERS["Authorization"] = `Bearer ${token}`
-    const userJson = { username: sessionStorage.getItem('username') }
+    userJson = { username: sessionStorage.getItem('username') }
 }
-console.log(HEADERS)
 
 function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
     let options = {
@@ -25,9 +25,12 @@ function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
     fetch(url, options)
         .then(response => response.json())
         .then(data => {
-            if (BODY) {
-                handleResponse(BODY, data)
+            if (!BODY) {
+                handleResponse(data)
             } else {
+                if (BODY.username) {
+                    handleResponse(BODY, data)
+                }
                 handleResponse(data)
             }
         }) 
