@@ -308,7 +308,7 @@ window.addEventListener("click", (event) => {
                 "colour": newColour,
             }
             updateTask(task, HEADERS, data)
-
+            task.removeAttribute("style")
         }
         taskColourList.classList.add('hidden')
         taskColourList = null

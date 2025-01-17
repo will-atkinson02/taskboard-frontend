@@ -10,7 +10,7 @@ if (token) {
     userJson = { username: sessionStorage.getItem('username') }
 }
 
-function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
+function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null, handleError = null) {
     let options = {
         method: METHOD,
         headers: HEADERS,
@@ -32,7 +32,12 @@ function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null) {
                 handleResponse(data)
             }
         }) 
-        .then(error => (error) ? console.error("Error:", error) : null)
+        .catch(error => {
+            console.error("Error:", error)
+            if (handleError) {
+                handleError()
+            }
+        })
 }
 
 // taskboards

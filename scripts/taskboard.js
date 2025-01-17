@@ -130,7 +130,11 @@ function updateTask(task, HEADERS, jsonData) {
     
 }
 function displayNewTask(stage, taskNameInput, numberOfTasks) {
-    stage.querySelector('.drop-target').innerHTML += insertTaskElement(numberOfTasks, taskNameInput.value, 'Click here to add a description...')
+    const dropTarget = stage.querySelector('.drop-target')
+    dropTarget.innerHTML += insertTaskElement(numberOfTasks, taskNameInput.value, 'Click here to add a description...')
+    if (dropTarget.lastElementChild.clientHeight > 45) {
+        dropTarget.lastElementChild.style.paddingBottom = "10px"
+    }
 }
 function insertTaskElement(position, taskName, description, taskId = '', descriptionIndicator = '') {
     return `
@@ -290,6 +294,10 @@ if (token) {
                 if (descriptionIndicator != '') {
                     taskSelector.querySelector('.indicators').classList.remove('hidden')
                 }
+
+                if (taskSelector.clientHeight > 45  && !task.colour && !task.description) {
+                    taskSelector.style.paddingBottom = "10px"
+                }
             })
         })
 
@@ -383,8 +391,8 @@ if (token) {
                         <div class='drop-target'></div>
                         <div class='add-task-container'><i class="plus-task fa-duotone fa-solid fa-plus"></i> Add task</div>
                         <form class='add-task-expanded-container hidden'>
-                            <input class='task-name-input' type='text' name='name' placeholder='Enter task name...'>
-                            <div>
+                            <textarea class='task-name-input' type='text' name='name' placeholder='Enter task name...'><textarea>
+                            <div class="submit-close-container">
                                 <button class='task-name-submit'>Add task</button>
                                 <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
                             </div>
@@ -457,30 +465,42 @@ if (token) {
             })
         })
 
-        // prevent long tasknames
-        let taskLineHeight = 17
+        // prevent long task renames
+        let taskLineHeight = 26
         document.querySelectorAll('.rename-task').forEach(renameTask => {
             renameTask.addEventListener("input", () => {
+                const taskName = renameTask.previousElementSibling
                 while (renameTask.scrollHeight > renameTask.clientHeight) {
-                    if (taskLineHeight < 34) {
-                        taskLineHeight += 17
+                    if (taskLineHeight < 52) {
+                        taskLineHeight += 26
                         renameTask.style.height = `${taskLineHeight}px`
+                        taskName.style.height = `${taskLineHeight}px`
                     } else {
                         renameTask.value = renameTask.value.slice(0, -1)
                     }
                 }
-                renameTask.style.height = '17px'
+                renameTask.style.height = '26px'
+                taskName.style.height = '26px'
                 if (renameTask.scrollHeight > renameTask.clientHeight) {
-                    renameTask.style.height = '34px'
-                    taskLineHeight = 34
+                    renameTask.style.height = '52px'
+                    taskName.style.height = '52px'
+                    taskLineHeight = 52
                 } else {
-                    taskLineHeight = 17
+                    taskLineHeight = 26
+                }
+            })
+        })
+
+        // prevent long task names
+        document.querySelectorAll('.task-name-input').forEach(nameInput => {
+            nameInput.addEventListener("input", () => {
+                while (nameInput.scrollWidth > nameInput.clientWidth) {
+                    nameInput.value = nameInput.value.slice(0, -1)
                 }
             })
         })
 
         // task description input
-        let descLineHeight = 42
         document.querySelectorAll('.task-description-input').forEach(descInput => {
             const descriptionElement = descInput.closest('.task-description-form').previousElementSibling
             const taskExpandedContainer = descriptionElement.closest('.task-expanded-container')
@@ -495,7 +515,7 @@ if (token) {
                     descriptionElement.textContent = descInput.value
                 }
                 descriptionElement.classList.remove('hidden')
-                while (descriptionElement.clientHeight >= 182) {
+                while (descriptionElement.clientHeight >= 273) {
                     descInput.value = descInput.value.slice(0, -1)
                     descriptionElement.textContent = descInput.value
                 }

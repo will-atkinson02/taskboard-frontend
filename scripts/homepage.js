@@ -111,7 +111,7 @@ function getDateValue(taskboardElement) {
 function addNewTaskboardHTML(taskboardsContainer) {
     taskboardsContainer.innerHTML += `
     <div id="new-taskboard" class="taskboard-link" href="taskboard.html">
-        <div class="taskboard-txt-container">
+        <div class="taskboard-txt-container" id="taskboard-txt-colour">
             <div class="taskboard-txt">New Taskboard</div>    
         </div>    
         <i class="big-plus fa-solid fa-plus"></i>
@@ -136,6 +136,7 @@ function disableButtons() {
 
 function enableButtons() {
     document.querySelectorAll('.basic-button').forEach(button => {
+        console.log('a')
         button.removeAttribute('style')
     })
 }
@@ -146,19 +147,16 @@ function handleFormResponse(jsonData, data) {
         sessionStorage.setItem('auth_token', data.token)
         document.querySelector('.login-form-container').remove()
         window.location.reload()
-    } else {
-        console.log('error!')
-        enableButtons()
     }
 }   
 
 function handleFormSubmit(formType) {
     const form = document.querySelector('.' + formType + '-form')
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
         event.preventDefault()
         disableButtons()
         const url = apiURL + formType
-        apiRequest(url, "POST", HEADERS, handleFormResponse, getFormData(event)) 
+        apiRequest(url, "POST", HEADERS, handleFormResponse, getFormData(event), enableButtons)
     })
 }
 
