@@ -136,7 +136,6 @@ function disableButtons() {
 
 function enableButtons() {
     document.querySelectorAll('.basic-button').forEach(button => {
-        console.log('a')
         button.removeAttribute('style')
     })
 }
