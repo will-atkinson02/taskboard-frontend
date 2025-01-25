@@ -42,7 +42,7 @@ function apiRequest(url, METHOD, HEADERS, handleResponse, BODY = null, handleErr
 
 // taskboards
 function createNewTaskboardRequest(HEADERS, taskboardPageURL, userJson) {
-    apiRequest("http://127.0.0.1:8000/api/taskboard", "POST", HEADERS, (data) => {
+    apiRequest(apiURL + "taskboard", "POST", HEADERS, (data) => {
         window.location.href = taskboardPageURL + `?id=${data.taskboard_id}`
     }, userJson)
 }

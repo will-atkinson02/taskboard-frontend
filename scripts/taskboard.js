@@ -259,7 +259,7 @@ if (token) {
                 <div class='drop-target'></div>
                 <div class='add-task-container'><i class="plus-task fa-solid fa-plus"></i> Add task</div>
                 <div class='add-task-expanded-container hidden'>
-                    <input class='task-name-input' type='text' placeholder='Enter task name...'>
+                    <textarea class='task-name-input' type='text' name='name' placeholder='Enter task name...'></textarea>
                     <div class="submit-close-container">
                         <button class='task-name-submit'>Add task</button>
                         <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>
@@ -391,7 +391,7 @@ if (token) {
                         <div class='drop-target'></div>
                         <div class='add-task-container'><i class="plus-task fa-duotone fa-solid fa-plus"></i> Add task</div>
                         <form class='add-task-expanded-container hidden'>
-                            <textarea class='task-name-input' type='text' name='name' placeholder='Enter task name...'><textarea>
+                            <textarea class='task-name-input' type='text' name='name' placeholder='Enter task name...'></textarea>
                             <div class="submit-close-container">
                                 <button class='task-name-submit'>Add task</button>
                                 <button class='close-task-input'><i class="fa-solid fa-xmark"></i></button>

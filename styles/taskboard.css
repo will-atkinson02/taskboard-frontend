@@ -205,7 +205,7 @@ i {
 
     /* Colour */
     background-color: var(--background-4);
-    color: var(--background-3);
+    color: var(--text-1);
 
     /* Text */
     text-align: center;
@@ -765,15 +765,23 @@ i {
 }
 
 .task-name-input {
+    all: unset;
+
     /* Display */
     width: 96%;
     margin: 6px 0 6px 0;
+    padding: 1px;
     height: 26px;
+    border: solid var(--background-1) 1px;
+
+    /* Colour */
+    color: var(--text-2);
+    background-color: white;
 
     /* Text */
     vertical-align: top;
     text-align: left; 
-    font-size: 20px;
+    font-size: 22.5px;
     word-break: break-word;
     overflow: hidden;
 }
