@@ -1,5 +1,5 @@
-const apiURL = "http://127.0.0.1:8000/api/"
-const taskboardPageURL = "http://127.0.0.1:5500/taskboard.html"
+const apiURL = "https://taskboardsapi.onrender.com/api/"
+const taskboardPageURL = "https://will-atkinson02.github.io/taskboard-frontend/taskboard.html"
 
 const token = sessionStorage.getItem('auth_token')
 let userJson = null
